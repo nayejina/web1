@@ -1,0 +1,61 @@
+{
+  "MipRoutes": [
+    {
+      "Source": "MyDrive",
+      "Targets": [
+        "MyDrive",
+        "OneDrive",
+        "SharePoint"
+      ]
+    },
+    {
+      "Source": "OneDrive",
+      "Targets": [
+        "MyDrive"
+      ]
+    },
+    {
+      "Source": "SharePoint",
+      "Targets": [
+        "MyDrive"
+      ]
+    }
+  ],
+  "DrmRoutes": [
+    {
+      "Source": "MyDrive",
+      "Targets": [
+        "MyDrive"
+      ]
+    },
+    {
+      "Source": "OneDrive",
+      "Targets": [
+        "MyDrive"
+      ]
+    },
+    {
+      "Source": "SharePoint",
+      "Targets": [
+        "MyDrive"
+      ]
+    }
+  ],
+  "MaxFileCount": 0,
+  "MaxTotalSizeMB": 0,
+  "ExcludedDirectories": [],
+  "ExcludedDirectoryKeywords": [],
+  "Demo": {
+    "ForceFailKeywords": [
+      "_fail",
+      "[실패]"
+    ],
+    "ForceSkipKeywords": [
+      "_skip",
+      "[스킵]"
+    ],
+    "SimulatedSpeedMBps": 40,
+    "MinFileDurationMs": 700,
+    "MaxFileDurationMs": 4000
+  }
+}

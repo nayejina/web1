@@ -1,0 +1,24 @@
+{
+  "WindowTitle": "CloudConverter",
+  "ProductName": "CloudConverter",
+  "Account": "demo.user@ableinfo.net",
+  "Version": "1.4.0 (Demo)",
+  "Copyright": "Copyright (C) 2025 Ableinfo Corp. - All rights reserved.",
+  "CloudRoot": "",
+  "SharePointSites": [
+    {
+      "Name": "전사 공지",
+      "Description": "여기서 조직의 공지 사항 및 중요한 정보를 확인하세요."
+    },
+    {
+      "Name": "영업팀",
+      "Description": "영업팀 문서 공유 사이트"
+    },
+    {
+      "Name": "기술연구소",
+      "Description": "기술연구소 프로젝트 문서"
+    }
+  ],
+  "CreateSampleFiles": true,
+  "AutoRegisterContextMenu": true
+}

@@ -1,0 +1,116 @@
+{
+  "Groups": [
+    {
+      "Id": "success",
+      "Display": "성공",
+      "Style": "Success"
+    },
+    {
+      "Id": "fail",
+      "Display": "실패",
+      "Style": "Fail"
+    },
+    {
+      "Id": "skip",
+      "Display": "스킵",
+      "Style": "Skip"
+    },
+    {
+      "Id": "info",
+      "Display": "알림",
+      "Style": "Info"
+    }
+  ],
+  "Codes": [
+    {
+      "Code": 1000,
+      "Group": "success",
+      "Category": "MIP 변환 성공",
+      "Reason": "MIP 레이블이 적용되었습니다."
+    },
+    {
+      "Code": 1001,
+      "Group": "success",
+      "Category": "DRM 변환 성공",
+      "Reason": "DRM 문서로 변환되었습니다."
+    },
+    {
+      "Code": 2001,
+      "Group": "fail",
+      "Category": "이미 암호화된 파일",
+      "Reason": "이미 암호화된 파일"
+    },
+    {
+      "Code": 2002,
+      "Group": "fail",
+      "Category": "이미 DRM 문서인 파일",
+      "Reason": "이미 DRM 문서인 파일"
+    },
+    {
+      "Code": 2003,
+      "Group": "fail",
+      "Category": "이미 암호화된 파일",
+      "Reason": "이미 암호화된 파일"
+    },
+    {
+      "Code": 2004,
+      "Group": "fail",
+      "Category": "파일 접근 실패",
+      "Reason": "파일에 접근할 수 없습니다 (사용 중이거나 권한 없음)"
+    },
+    {
+      "Code": 2005,
+      "Group": "fail",
+      "Category": "레이블 변환 권한 없음",
+      "Reason": "레이블 변환 권한 없음"
+    },
+    {
+      "Code": 2006,
+      "Group": "fail",
+      "Category": "원본 파일 없음",
+      "Reason": "원본 파일을 찾을 수 없습니다"
+    },
+    {
+      "Code": 3001,
+      "Group": "skip",
+      "Category": "대상 확장자가 아닌 경우",
+      "Reason": "지원하지 않는 확장자"
+    },
+    {
+      "Code": 3002,
+      "Group": "skip",
+      "Category": "파일 사이즈가 0",
+      "Reason": "파일 크기가 0 입니다"
+    },
+    {
+      "Code": 3003,
+      "Group": "skip",
+      "Category": "정책에 의한 스킵",
+      "Reason": "변환 규칙에 해당하는 레이블이 아닙니다."
+    },
+    {
+      "Code": 3004,
+      "Group": "skip",
+      "Category": "제외 디렉토리",
+      "Reason": "제외 디렉토리에 있는 파일"
+    },
+    {
+      "Code": 3005,
+      "Group": "skip",
+      "Category": "사용자 작업 중지",
+      "Reason": "사용자가 작업을 중지했습니다"
+    },
+    {
+      "Code": 9001,
+      "Group": "info",
+      "Category": "폴더 변환 시작",
+      "Reason": "폴더 변환 시작"
+    },
+    {
+      "Code": 9002,
+      "Group": "info",
+      "Category": "폴더 변환 완료",
+      "Reason": "폴더 변환 완료"
+    }
+  ]
+}
