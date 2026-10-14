@@ -21,9 +21,9 @@ internal sealed partial class MainForm : ThemedForm
     private readonly ToolTip _tip = new() { InitialDelay = 300, ReshowDelay = 100, AutoPopDelay = 8000 };
 
     // 헤더
-    private readonly Label _formatLabel = new() { Text = "변환할 형식", AutoSize = true, ForeColor = Theme.HeaderText, BackColor = Theme.HeaderBack };
-    private readonly HeaderRadio _mipRadio = new(ConversionFormat.Mip.DisplayName());
-    private readonly HeaderRadio _drmRadio = new(ConversionFormat.Drm.DisplayName());
+    private readonly Label _formatLabel = new() { Text = "변환할 형식", AutoSize = true };
+    private readonly RadioButton _mipRadio = new() { Text = ConversionFormat.Mip.DisplayName(), AutoSize = true };
+    private readonly RadioButton _drmRadio = new() { Text = ConversionFormat.Drm.DisplayName(), AutoSize = true };
     private readonly InfoButton _infoButton = new();
     private readonly FlatButton _startButton = new("변환 시작", FlatButtonKind.Primary) { Width = 96 };
 
@@ -125,7 +125,7 @@ internal sealed partial class MainForm : ThemedForm
     {
         var header = new TableLayoutPanel
         {
-            Dock = DockStyle.Fill, BackColor = Theme.HeaderBack, ColumnCount = 6, RowCount = 1,
+            Dock = DockStyle.Fill, ColumnCount = 6, RowCount = 1,
             Padding = new Padding(12, 0, 12, 0), Margin = Padding.Empty,
         };
         header.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
@@ -135,13 +135,19 @@ internal sealed partial class MainForm : ThemedForm
         header.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         header.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         header.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        // 상단 메뉴 아래 구분선
+        header.Paint += (_, e) =>
+        {
+            using var pen = new Pen(Theme.HeaderSeparator);
+            e.Graphics.DrawLine(pen, Px(10), header.Height - 1, header.Width - Px(10), header.Height - 1);
+        };
+        header.Resize += (_, _) => header.Invalidate();
 
         _formatLabel.Anchor = AnchorStyles.Left;
         _formatLabel.Margin = new Padding(0, 0, 14, 0);
         foreach (var radio in new[] { _mipRadio, _drmRadio })
         {
             radio.Anchor = AnchorStyles.Left;
-            radio.Size = new Size(TextRenderer.MeasureText(radio.Text, Font).Width + 30, 24);
             radio.Margin = new Padding(10, 0, 10, 0);
         }
         _infoButton.Anchor = AnchorStyles.Right;

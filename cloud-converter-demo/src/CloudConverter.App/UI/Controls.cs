@@ -49,7 +49,7 @@ internal sealed class FlatButton : Button
         {
             back = Enabled ? Theme.PrimaryBack : Theme.PrimaryBackDisabled;
             fore = Enabled ? Theme.PrimaryText : Theme.PrimaryTextDisabled;
-            border = Enabled ? Color.White : Theme.PrimaryBackDisabled;
+            border = back;
         }
         else
         {
@@ -58,7 +58,7 @@ internal sealed class FlatButton : Button
             border = ControlPaint.Dark(Theme.ButtonBack, 0.05f);
         }
         if (Enabled && _pressed) back = ControlPaint.Dark(back, 0.08f);
-        else if (Enabled && _hover) back = Kind == FlatButtonKind.Primary ? ColorTranslator.FromHtml("#E6EEF5") : ControlPaint.Light(back, 0.35f);
+        else if (Enabled && _hover) back = Kind == FlatButtonKind.Primary ? Theme.PrimaryBackHover : ControlPaint.Light(back, 0.35f);
 
         var g = e.Graphics;
         g.Clear(Parent?.BackColor ?? Theme.WindowBack);
@@ -75,44 +75,6 @@ internal sealed class FlatButton : Button
     }
 }
 
-/// <summary>파란 제목 메뉴 위의 라디오 버튼 (활성 흰색 / 비활성 #ADC6DA)</summary>
-internal sealed class HeaderRadio : RadioButton
-{
-    public HeaderRadio(string text)
-    {
-        Text = text;
-        AutoSize = false;
-        SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
-        BackColor = Theme.HeaderBack;
-        ForeColor = Theme.HeaderText;
-        Cursor = Cursors.Hand;
-        Margin = new Padding(12, 0, 0, 0);
-    }
-
-    public int PreferredWidthFor() => TextRenderer.MeasureText(Text, Font).Width + LogicalToDeviceUnits(26);
-
-    protected override void OnPaint(PaintEventArgs e)
-    {
-        var g = e.Graphics;
-        g.Clear(Theme.HeaderBack);
-        g.SmoothingMode = SmoothingMode.AntiAlias;
-        var color = Enabled ? Theme.HeaderText : Theme.HeaderTextDisabled;
-        var d = LogicalToDeviceUnits(13);
-        var circle = new Rectangle(1, (Height - d) / 2, d, d);
-        using (var pen = new Pen(color, Math.Max(1f, LogicalToDeviceUnits(1) * 1.2f))) g.DrawEllipse(pen, circle);
-        if (Checked)
-        {
-            var dot = Rectangle.Inflate(circle, -LogicalToDeviceUnits(3), -LogicalToDeviceUnits(3));
-            using var brush = new SolidBrush(color);
-            g.FillEllipse(brush, dot);
-        }
-        var textRect = new Rectangle(circle.Right + LogicalToDeviceUnits(6), 0, Width - circle.Right - LogicalToDeviceUnits(6), Height);
-        TextRenderer.DrawText(g, Text, Font, textRect, color, TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.SingleLine);
-        if (Focused && ShowFocusCues)
-            ControlPaint.DrawFocusRectangle(g, textRect, color, Theme.HeaderBack);
-    }
-}
-
 /// <summary>원형 ⓘ (프로그램 정보) 버튼</summary>
 internal sealed class InfoButton : Control
 {
@@ -124,7 +86,7 @@ internal sealed class InfoButton : Control
                  | ControlStyles.SupportsTransparentBackColor, true);
         Size = new Size(22, 22);
         Cursor = Cursors.Hand;
-        BackColor = Theme.HeaderBack;
+        BackColor = Theme.WindowBack;
         Margin = new Padding(0, 0, 8, 0);
     }
 
@@ -134,12 +96,12 @@ internal sealed class InfoButton : Control
     protected override void OnPaint(PaintEventArgs e)
     {
         var g = e.Graphics;
-        g.Clear(Theme.HeaderBack);
+        g.Clear(Parent?.BackColor ?? Theme.WindowBack);
         g.SmoothingMode = SmoothingMode.AntiAlias;
         var size = Math.Min(Width, Height) - 2;
         var rect = new Rectangle((Width - size) / 2, (Height - size) / 2, size, size);
-        using (var brush = new SolidBrush(_hover ? Color.White : ColorTranslator.FromHtml("#E1ECF5"))) g.FillEllipse(brush, rect);
+        using (var brush = new SolidBrush(_hover ? ControlPaint.Dark(Theme.InfoIcon, 0.1f) : Theme.InfoIcon)) g.FillEllipse(brush, rect);
         using var font = new Font("Segoe UI", size * 0.42f, FontStyle.Bold, GraphicsUnit.Pixel);
-        TextRenderer.DrawText(g, "i", font, rect, Theme.HeaderBack, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+        TextRenderer.DrawText(g, "i", font, rect, Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
     }
 }

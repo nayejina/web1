@@ -16,7 +16,6 @@ internal static class Program
     private static void Main(string[] args)
     {
         ApplicationConfiguration.Initialize();
-        Application.SetDefaultFont(Theme.Regular());
 
         if (args.Any(a => a.Equals("--register", StringComparison.OrdinalIgnoreCase)
                           || a.Equals("--unregister", StringComparison.OrdinalIgnoreCase)))

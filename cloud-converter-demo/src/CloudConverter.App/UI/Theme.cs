@@ -1,18 +1,19 @@
-using System.Runtime.InteropServices;
-
 namespace CloudConverter.App.UI;
 
-/// <summary>디자인 가이드(2) - Purview 와 유사한 색상 배치</summary>
+/// <summary>
+/// 화면 색상. 실제 Converter 툴 UI 기준: Windows 기본 제목 표시줄·폰트, 상단 메뉴는 밝은 배경 + 구분선,
+/// &lt;변환 시작&gt; 버튼만 파란색. 나머지는 디자인 가이드(2) 색상.
+/// </summary>
 internal static class Theme
 {
-    // 제목 표시줄 및 메인 메뉴
-    public static readonly Color HeaderBack = ColorTranslator.FromHtml("#004E8C");
-    public static readonly Color HeaderText = Color.White;
-    public static readonly Color HeaderTextDisabled = ColorTranslator.FromHtml("#ADC6DA");
+    // 상단 메뉴 (변환할 형식)
+    public static readonly Color HeaderSeparator = ColorTranslator.FromHtml("#DADADA");
+    public static readonly Color InfoIcon = ColorTranslator.FromHtml("#7A8794");
 
     // <변환 시작> 버튼
-    public static readonly Color PrimaryBack = Color.White;
-    public static readonly Color PrimaryText = Color.Black;
+    public static readonly Color PrimaryBack = ColorTranslator.FromHtml("#3A6FA5");
+    public static readonly Color PrimaryBackHover = ColorTranslator.FromHtml("#2F5D8C");
+    public static readonly Color PrimaryText = Color.White;
     public static readonly Color PrimaryBackDisabled = ColorTranslator.FromHtml("#8294AA");
     public static readonly Color PrimaryTextDisabled = ColorTranslator.FromHtml("#ADC6DA");
 
@@ -28,7 +29,7 @@ internal static class Theme
     public static readonly Color LabelDisabled = ColorTranslator.FromHtml("#A0A0A0");
 
     // 진행 상태
-    public static readonly Color ProgressBar = ColorTranslator.FromHtml("#4A8FD9");
+    public static readonly Color ProgressBar = ColorTranslator.FromHtml("#1F8BF3");
     public static readonly Color ProgressTrack = Color.White;
     public static readonly Color ProgressBorder = ColorTranslator.FromHtml("#9AA7B4");
     public static readonly Color ProgressFail = ColorTranslator.FromHtml("#C9C9C9");
@@ -36,30 +37,8 @@ internal static class Theme
     public static readonly Color Accent = ColorTranslator.FromHtml("#0078D4");
     public static readonly Color Warning = ColorTranslator.FromHtml("#C42B1C");
 
-    public const string FontName = "Malgun Gothic";
-
-    public static Font Regular(float size = 9f) => new(FontName, size, FontStyle.Regular);
-    public static Font Bold(float size = 9f) => new(FontName, size, FontStyle.Bold);
-
-    /// <summary>Windows 11 제목 표시줄 색상을 Purview 색상으로 지정</summary>
-    public static void ApplyTitleBar(Form form)
-    {
-        try
-        {
-            var caption = ColorTranslator.ToWin32(HeaderBack);
-            var text = ColorTranslator.ToWin32(HeaderText);
-            DwmSetWindowAttribute(form.Handle, DWMWA_CAPTION_COLOR, ref caption, sizeof(int));
-            DwmSetWindowAttribute(form.Handle, DWMWA_TEXT_COLOR, ref text, sizeof(int));
-        }
-        catch (DllNotFoundException) { }
-        catch (EntryPointNotFoundException) { }
-    }
-
-    private const int DWMWA_CAPTION_COLOR = 35;
-    private const int DWMWA_TEXT_COLOR = 36;
-
-    [DllImport("dwmapi.dll")]
-    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
+    /// <summary>Windows 기본 폰트 (Control.DefaultFont) 의 굵은 글꼴</summary>
+    public static Font Bold() => new(Control.DefaultFont, FontStyle.Bold);
 
     public static Icon AppIcon
     {
@@ -71,22 +50,15 @@ internal static class Theme
     }
 }
 
-/// <summary>모든 창의 공통 기반: 맑은 고딕, DPI 자동 배율, 제목 표시줄 색상</summary>
+/// <summary>모든 창의 공통 기반: Windows 기본 폰트·제목 표시줄, DPI 자동 배율</summary>
 internal class ThemedForm : Form
 {
     public ThemedForm()
     {
         AutoScaleDimensions = new SizeF(96F, 96F);
         AutoScaleMode = AutoScaleMode.Dpi;
-        Font = Theme.Regular();
         BackColor = Theme.WindowBack;
         Icon = Theme.AppIcon;
-    }
-
-    protected override void OnHandleCreated(EventArgs e)
-    {
-        base.OnHandleCreated(e);
-        Theme.ApplyTitleBar(this);
     }
 
     /// <summary>96 DPI 기준 픽셀을 현재 DPI 픽셀로</summary>
