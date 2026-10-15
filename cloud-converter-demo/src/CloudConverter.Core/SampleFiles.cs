@@ -167,14 +167,6 @@ public static class SampleFiles
             CreateLocalSamples(localSampleFolder);
     }
 
-    /// <summary>"시연 초기화": 샘플 문서 폴더를 지우고 처음 상태로 다시 만든다</summary>
-    public static void ResetLocalSamples(string localSampleFolder)
-    {
-        if (Directory.Exists(localSampleFolder))
-            Directory.Delete(localSampleFolder, recursive: true);
-        CreateLocalSamples(localSampleFolder);
-    }
-
     private static void CreateLocalSamples(string localSampleFolder)
     {
         CreateDocx(Path.Combine(localSampleFolder, "제안서_초안.docx"), "제안서 초안\n시연용 샘플 문서입니다.");

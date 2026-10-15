@@ -59,21 +59,17 @@ internal sealed class AboutForm : ThemedForm
             Margin = new Padding(0, 0, 0, 12),
         };
 
-        var buttons = new TableLayoutPanel { AutoSize = true, ColumnCount = 5, RowCount = 1, Dock = DockStyle.Fill, Margin = Padding.Empty };
-        buttons.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        var buttons = new TableLayoutPanel { AutoSize = true, ColumnCount = 4, RowCount = 1, Dock = DockStyle.Fill, Margin = Padding.Empty };
         buttons.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         buttons.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         buttons.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         var samples = new FlatButton("샘플 폴더 열기") { Width = 130, Margin = new Padding(0, 0, 6, 0) };
         _menuButton.Margin = new Padding(0, 0, 6, 0);
-        var reset = new FlatButton("시연 초기화") { Margin = new Padding(0, 0, 6, 0) };
-        reset.Width = reset.PreferredWidthFor(reset.Text);
         var close = new FlatButton("닫기") { Width = 80, DialogResult = DialogResult.OK, Margin = Padding.Empty };
         buttons.Controls.Add(_menuButton, 0, 0);
         buttons.Controls.Add(samples, 1, 0);
-        buttons.Controls.Add(reset, 2, 0);
-        buttons.Controls.Add(close, 4, 0);
+        buttons.Controls.Add(close, 3, 0);
         AcceptButton = close;
         CancelButton = close;
 
@@ -87,31 +83,12 @@ internal sealed class AboutForm : ThemedForm
 
         UpdateMenuButton();
         _menuButton.Click += (_, _) => ToggleContextMenu();
-        reset.Click += (_, _) => ResetDemo();
         samples.Click += (_, _) =>
         {
             Directory.CreateDirectory(_services.SampleFolder);
             try { Process.Start("explorer.exe", $"\"{_services.SampleFolder}\""); }
             catch (System.ComponentModel.Win32Exception) { }
         };
-    }
-
-    /// <summary>시연 변환 기록을 지우고 샘플 문서를 처음 상태로 다시 만든다</summary>
-    private void ResetDemo()
-    {
-        if (!MessageDialog.Confirm(this, "시연 변환 기록을 지우고 샘플 문서 폴더를 처음 상태로 다시 만듭니다.\n" +
-                                         "(샘플 문서 폴더 안에 저장한 다른 파일도 함께 지워집니다.)\n\n계속하시겠습니까?"))
-            return;
-        try
-        {
-            _services.States.Clear();
-            SampleFiles.ResetLocalSamples(_services.SampleFolder);
-            MessageDialog.Info(this, "시연 초기화가 완료되었습니다.\n샘플 문서를 다시 변환할 수 있습니다.");
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            MessageDialog.Info(this, "시연 초기화 중 일부 파일을 처리하지 못했습니다.\n" + ex.Message);
-        }
     }
 
     private static void AddRow(TableLayoutPanel table, int row, string name, string value)

@@ -132,7 +132,7 @@ public class EngineTests
     {
         var dir = new TempDir();
         var engine = new ConversionEngine(ExtensionRules.CreateDefault(), ConversionPolicy.CreateDefault(),
-            new ProtectionStateStore(dir.File("state.json")));
+            new ProtectionStateStore());
         return (engine, dir);
     }
 
@@ -157,15 +157,18 @@ public class EngineTests
     }
 
     [Fact]
-    public void StatePersistsAcrossInstances()
+    public void NewSessionStartsUnencrypted()
     {
         var (engine, dir) = Create();
         using var _ = dir;
         var src = dir.File("a.pdf");
         SampleFiles.CreatePdf(src, "x");
-        engine.Convert(src, src, ConversionFormat.Mip);
-        var reloaded = new ProtectionStateStore(dir.File("state.json"));
-        Assert.Equal(ProtectionState.Mip, reloaded.Get(src));
+        Assert.Equal(ResultCodes.MipSuccess, engine.Convert(src, src, ConversionFormat.Mip));
+        Assert.Equal(ResultCodes.AlreadyMip, engine.Convert(src, src, ConversionFormat.Mip));
+
+        // 프로그램을 다시 실행한 것과 같음: 새 저장소에서는 다시 변환 가능
+        var next = new ConversionEngine(ExtensionRules.CreateDefault(), ConversionPolicy.CreateDefault(), new ProtectionStateStore());
+        Assert.Equal(ResultCodes.MipSuccess, next.Convert(src, src, ConversionFormat.Mip));
     }
 
     [Fact]
@@ -261,7 +264,7 @@ public class SampleTests
     }
 }
 
-public class DemoResetTests
+public class DemoSampleTests
 {
     [Fact]
     public void DetectionCanBeDisabled()
@@ -269,30 +272,10 @@ public class DemoResetTests
         using var dir = new TempDir();
         var policy = ConversionPolicy.CreateDefault();
         policy.Demo.DetectEncryptedFiles = false;
-        var engine = new ConversionEngine(ExtensionRules.CreateDefault(), policy, new ProtectionStateStore(dir.File("s.json")));
+        var engine = new ConversionEngine(ExtensionRules.CreateDefault(), policy, new ProtectionStateStore());
         var encrypted = dir.File("enc.docx");
         SampleFiles.CreateEncryptedLookingOffice(encrypted);
         Assert.Equal(ResultCodes.MipSuccess, engine.Convert(encrypted, dir.File("o", "enc.docx"), ConversionFormat.Mip));
-    }
-
-    [Fact]
-    public void ClearAndResetSamplesAllowConvertingAgain()
-    {
-        using var dir = new TempDir();
-        var store = new ProtectionStateStore(dir.File("s.json"));
-        var engine = new ConversionEngine(ExtensionRules.CreateDefault(), ConversionPolicy.CreateDefault(), store);
-        var samples = dir.File("samples");
-        SampleFiles.EnsureDemoContent(dir.File("cloud"), new DemoSettings(), samples);
-        var docx = Path.Combine(samples, "제안서_초안.docx");
-
-        Assert.Equal(ResultCodes.MipSuccess, engine.Convert(docx, docx, ConversionFormat.Mip));
-        Assert.Equal(ResultCodes.AlreadyMip, engine.Convert(docx, docx, ConversionFormat.Mip));
-
-        File.WriteAllText(Path.Combine(samples, "extra.txt"), "x");
-        store.Clear();
-        SampleFiles.ResetLocalSamples(samples);
-        Assert.False(File.Exists(Path.Combine(samples, "extra.txt")));
-        Assert.Equal(ResultCodes.MipSuccess, engine.Convert(docx, docx, ConversionFormat.Mip));
     }
 
     [Fact]
@@ -300,7 +283,7 @@ public class DemoResetTests
     {
         using var dir = new TempDir();
         var engine = new ConversionEngine(ExtensionRules.CreateDefault(), ConversionPolicy.CreateDefault(),
-            new ProtectionStateStore(dir.File("s.json")));
+            new ProtectionStateStore());
         var samples = dir.File("samples");
         SampleFiles.EnsureDemoContent(dir.File("cloud"), new DemoSettings(), samples);
         int Run(string name) => engine.Convert(Path.Combine(samples, name), dir.File("out", name), ConversionFormat.Mip);

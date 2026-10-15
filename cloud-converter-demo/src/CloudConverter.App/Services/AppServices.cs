@@ -33,7 +33,10 @@ internal sealed class AppServices
         Policy = Load("conversion-policy.json", ConversionPolicy.CreateDefault);
         Classification = Load("log-classification.json", LogClassification.CreateDefault);
 
-        States = new ProtectionStateStore(Path.Combine(DataDirectory, "protection-state.json"));
+        // 변환 기록은 실행 중에만 유지: 실행할 때마다 모든 파일이 암호화되지 않은 상태로 시작
+        States = new ProtectionStateStore();
+        try { File.Delete(Path.Combine(DataDirectory, "protection-state.json")); } // 이전 버전이 남긴 기록
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
         Engine = new ConversionEngine(Rules, Policy, States);
         Logs = new LogStore(Path.Combine(DataDirectory, "Logs"));
 
