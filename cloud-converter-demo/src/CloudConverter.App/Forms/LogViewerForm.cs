@@ -48,7 +48,7 @@ internal sealed class LogViewerForm : ThemedForm
         _to.Value = DateTime.Today;
 
         _list.Columns.Add("결과", 70);
-        _list.Columns.Add("시간", 140);
+        _list.Columns.Add("시간", 165);
         _list.Columns.Add("파일 이름", 240);
         _list.Columns.Add("파일 경로", 420);
 
@@ -116,7 +116,7 @@ internal sealed class LogViewerForm : ThemedForm
     {
         var w = _list.ClientSize.Width;
         _list.Columns[0].Width = Px(70);
-        _list.Columns[1].Width = Px(140);
+        _list.Columns[1].Width = Px(165);
         var rest = Math.Max(Px(300), w - _list.Columns[0].Width - _list.Columns[1].Width);
         _list.Columns[2].Width = rest * 2 / 5;
         _list.Columns[3].Width = rest - _list.Columns[2].Width;

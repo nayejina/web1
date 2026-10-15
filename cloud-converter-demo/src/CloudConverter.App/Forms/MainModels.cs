@@ -16,6 +16,8 @@ internal sealed class TargetItem
 
 internal enum StatusStyle
 {
+    /// <summary>대기 중 ("준비 중")</summary>
+    Pending,
     Running,
     Success,
     Fail,

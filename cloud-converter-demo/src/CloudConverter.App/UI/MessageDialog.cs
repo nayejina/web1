@@ -29,7 +29,7 @@ internal sealed class MessageDialog : ThemedForm
         {
             Text = message,
             AutoSize = true,
-            MaximumSize = new Size(440, 0),
+            MaximumSize = new Size(520, 0),
             MinimumSize = new Size(300, 0),
             TextAlign = ContentAlignment.MiddleCenter,
             Anchor = AnchorStyles.None,

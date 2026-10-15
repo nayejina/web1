@@ -26,7 +26,7 @@ internal sealed class FlatButton : Button
         FlatAppearance.BorderSize = 0;
         SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
         Height = 28;
-        MinimumSize = new Size(64, 28);
+        MinimumSize = new Size(32, 22);
         Margin = new Padding(4, 0, 0, 0);
         AutoSize = false;
         UseVisualStyleBackColor = false;
@@ -53,9 +53,9 @@ internal sealed class FlatButton : Button
         }
         else
         {
-            back = Theme.ButtonBack;
+            back = Enabled ? Theme.ButtonBack : Theme.ButtonBackDisabled;
             fore = Enabled ? Theme.ButtonText : Theme.ButtonTextDisabled;
-            border = ControlPaint.Dark(Theme.ButtonBack, 0.05f);
+            border = back;
         }
         if (Enabled && _pressed) back = ControlPaint.Dark(back, 0.08f);
         else if (Enabled && _hover) back = Kind == FlatButtonKind.Primary ? Theme.PrimaryBackHover : ControlPaint.Light(back, 0.35f);

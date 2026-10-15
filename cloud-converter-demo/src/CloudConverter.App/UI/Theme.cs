@@ -7,8 +7,8 @@ namespace CloudConverter.App.UI;
 internal static class Theme
 {
     // 상단 메뉴 (변환할 형식)
-    public static readonly Color HeaderSeparator = ColorTranslator.FromHtml("#DADADA");
-    public static readonly Color InfoIcon = ColorTranslator.FromHtml("#7A8794");
+    public static readonly Color HeaderSeparator = ColorTranslator.FromHtml("#EEEEEE");
+    public static readonly Color InfoIcon = ColorTranslator.FromHtml("#9AA6B6");
 
     // <변환 시작> 버튼
     public static readonly Color PrimaryBack = ColorTranslator.FromHtml("#3A6FA5");
@@ -20,6 +20,7 @@ internal static class Theme
     // 일반 버튼
     public static readonly Color ButtonBack = ColorTranslator.FromHtml("#CCCCCD");
     public static readonly Color ButtonText = Color.Black;
+    public static readonly Color ButtonBackDisabled = ColorTranslator.FromHtml("#ECECEC");
     public static readonly Color ButtonTextDisabled = ColorTranslator.FromHtml("#B2B3B3");
 
     // 전체 창 (파일/상태 영역 제외)
@@ -29,7 +30,8 @@ internal static class Theme
     public static readonly Color LabelDisabled = ColorTranslator.FromHtml("#A0A0A0");
 
     // 진행 상태
-    public static readonly Color ProgressBar = ColorTranslator.FromHtml("#1F8BF3");
+    public static readonly Color ProgressBar = ColorTranslator.FromHtml("#1E90FF");
+    public static readonly Color PendingBorder = ColorTranslator.FromHtml("#CCCCCC");
     public static readonly Color ProgressTrack = Color.White;
     public static readonly Color ProgressBorder = ColorTranslator.FromHtml("#9AA7B4");
     public static readonly Color ProgressFail = ColorTranslator.FromHtml("#C9C9C9");
@@ -37,8 +39,16 @@ internal static class Theme
     public static readonly Color Accent = ColorTranslator.FromHtml("#0078D4");
     public static readonly Color Warning = ColorTranslator.FromHtml("#C42B1C");
 
-    /// <summary>Windows 기본 폰트 (Control.DefaultFont) 의 굵은 글꼴</summary>
-    public static Font Bold() => new(Control.DefaultFont, FontStyle.Bold);
+    /// <summary>
+    /// 화면 글꼴: Windows 기본 UI 글꼴(메시지 상자 글꼴, 한국어 Windows 는 맑은 고딕).
+    /// 크기는 실제 Converter 툴 화면에서 잰 글자 크기·콤보 높이(30px)·목록 행 높이(25px)에 맞춘 값.
+    /// </summary>
+    public const float UiFontSize = 11f;
+
+    public static Font Ui(FontStyle style = FontStyle.Regular) =>
+        new((SystemFonts.MessageBoxFont ?? Control.DefaultFont).FontFamily, UiFontSize, style);
+
+    public static Font Bold() => Ui(FontStyle.Bold);
 
     public static Icon AppIcon
     {
@@ -57,6 +67,7 @@ internal class ThemedForm : Form
     {
         AutoScaleDimensions = new SizeF(96F, 96F);
         AutoScaleMode = AutoScaleMode.Dpi;
+        Font = Theme.Ui();
         BackColor = Theme.WindowBack;
         Icon = Theme.AppIcon;
     }

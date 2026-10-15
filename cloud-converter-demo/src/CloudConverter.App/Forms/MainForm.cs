@@ -25,41 +25,42 @@ internal sealed partial class MainForm : ThemedForm
     private readonly RadioButton _mipRadio = new() { Text = ConversionFormat.Mip.DisplayName(), AutoSize = true };
     private readonly RadioButton _drmRadio = new() { Text = ConversionFormat.Drm.DisplayName(), AutoSize = true };
     private readonly InfoButton _infoButton = new();
-    private readonly FlatButton _startButton = new("변환 시작", FlatButtonKind.Primary) { Width = 96 };
+    private readonly FlatButton _startButton = new("변환 시작", FlatButtonKind.Primary);
 
     // 대상 파일/폴더
-    private readonly Label _targetLabel = new() { Text = "대상파일/폴더", AutoSize = true };
-    private readonly ComboBox _targetCombo = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 130 };
+    private readonly Label _targetLabel = new() { Text = "대상 파일 / 폴더", AutoSize = true };
+    private readonly ComboBox _targetCombo = new() { DropDownStyle = ComboBoxStyle.DropDownList };
     private readonly FlatButton _targetFind = new("찾기");
     private readonly ListView _targetList = new()
     {
         View = View.Details, FullRowSelect = true, HideSelection = false, MultiSelect = true,
         HeaderStyle = ColumnHeaderStyle.Nonclickable, BorderStyle = BorderStyle.FixedSingle, AllowDrop = true,
-        Dock = DockStyle.Fill, BackColor = Theme.ListBack, ShowItemToolTips = false,
+        BackColor = Theme.ListBack, ShowItemToolTips = false,
     };
     private readonly ContextMenuStrip _targetMenu = new();
     private readonly ContextMenuStrip _findMenu = new();
 
     // 저장 위치
     private readonly Label _saveLabel = new() { Text = "저장 위치", AutoSize = true };
-    private readonly ComboBox _saveCombo = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 130 };
+    private readonly ComboBox _saveCombo = new() { DropDownStyle = ComboBoxStyle.DropDownList };
     private readonly FlatButton _saveFind = new("찾기");
-    private readonly TextBox _savePathBox = new() { ReadOnly = true, Dock = DockStyle.Fill, BackColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
+    private readonly Panel _savePathPanel = new() { BackColor = Color.White };
+    private readonly TextBox _savePathBox = new() { ReadOnly = true, BackColor = Color.White, BorderStyle = BorderStyle.None };
     private readonly CheckBox _sameFolderCheck = new() { Text = "대상 파일과 동일 폴더에 저장", AutoSize = true };
 
     // 변환 상태
     private readonly Label _statusLabel = new() { Text = "변환 상태", AutoSize = true };
-    private readonly FlatButton _logButton = new("로그 보기") { Width = 86 };
+    private readonly FlatButton _logButton = new("로그 보기");
     private readonly ListView _statusList = new()
     {
         View = View.Details, FullRowSelect = true, MultiSelect = false, OwnerDraw = true,
         HeaderStyle = ColumnHeaderStyle.Nonclickable, BorderStyle = BorderStyle.FixedSingle,
-        Dock = DockStyle.Fill, BackColor = Theme.ListBack,
+        BackColor = Theme.ListBack,
     };
 
     // 하단
-    private readonly FlatButton _resetButton = new("선택 옵션 초기화") { Width = 120 };
-    private readonly FlatButton _closeButton = new("닫기") { Width = 86 };
+    private readonly FlatButton _resetButton = new("선택 옵션 초기화");
+    private readonly FlatButton _closeButton = new("닫기");
 
     private ConversionFormat? _format;
     private string? _savePath;
@@ -73,7 +74,7 @@ internal sealed partial class MainForm : ThemedForm
     public MainForm(AppServices services, LaunchRequest? initialRequest)
     {
         _services = services;
-        _shellIcons = new ShellIcons(_icons);
+        _shellIcons = new ShellIcons(_icons, Px(RowIconPadding));
         if (initialRequest is not null)
             _pendingRequests.Enqueue(initialRequest);
 
@@ -83,6 +84,7 @@ internal sealed partial class MainForm : ThemedForm
         Size = new Size(1050, 632);
         MinimumSize = new Size(859, 461);
         KeyPreview = true;
+        DoubleBuffered = true;
 
         BuildLayout();
         WireEvents();
@@ -90,170 +92,161 @@ internal sealed partial class MainForm : ThemedForm
     }
 
     // ───────────────────────────── 레이아웃 ─────────────────────────────
+    // 실제 Converter 툴 화면(1050 * 632)에서 잰 값 (96 DPI 기준 px, 클라이언트 영역 좌표)
+
+    private const int MarginLeft = 17, MarginRight = 14;
+    private const int ColumnGap = 35;
+    /// <summary>오른쪽 열(저장 위치/변환 상태) 기본 폭. 창을 줄이면 오른쪽은 유지하고 왼쪽 열이 줄어든다.</summary>
+    private const int RightColumnWidth = 384;
+    private const double RightColumnRatio = 384.0 / 968.0;
+    private const int HeaderTop = 22, HeaderHeight = 32, SeparatorY = 68;
+    private const int SectionTop = 85, ControlHeight = 30;
+    private const int ListTop = 126, ListBottomGap = 57, FooterBottomGap = 44;
+    private const int ComboWidth = 150, FindWidth = 60, ComboGap = 6;
+    private const int PathTop = 127, PathHeight = 26;
+    private const int CheckCenterY = 181;
+    private const int StatusHeaderTop = 217, StatusHeaderHeight = 31, StatusListTop = 260;
+    private const int RowHeight = 24, RowIconPadding = (RowHeight - 16) / 2;
 
     private void BuildLayout()
     {
         SuspendLayout();
-        _icons.ImageSize = new Size(Px(16), Px(16));
+        // 행 높이 = 이미지 높이: 16px 아이콘을 위아래 여백이 있는 24px 이미지로 넣는다
+        _icons.ImageSize = new Size(Px(18), Px(RowHeight));
         _targetList.SmallImageList = _icons;
         _statusList.SmallImageList = _icons;
-        // 행 높이 확보용 (아이콘 크기가 행 높이를 결정)
         _targetList.Columns.Add("파일/폴더명");
-        _targetList.Columns.Add("크기", 80, HorizontalAlignment.Right);
-        _targetList.Columns.Add("암호화", 64, HorizontalAlignment.Center);
-        _targetList.Columns.Add("경로", 260);
+        _targetList.Columns.Add("크기", 84, HorizontalAlignment.Center);
+        _targetList.Columns.Add("암호화", 89, HorizontalAlignment.Center);
+        _targetList.Columns.Add("경로", 240);
         _statusList.Columns.Add("파일명");
-        _statusList.Columns.Add("진행 상태", 120, HorizontalAlignment.Center);
+        _statusList.Columns.Add("진행 상태", 134, HorizontalAlignment.Center);
 
-        var root = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 3, Margin = Padding.Empty, Padding = Padding.Empty };
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
-        root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
-        root.Controls.Add(BuildHeader(), 0, 0);
-        root.Controls.Add(BuildContent(), 0, 1);
-        root.Controls.Add(BuildFooter(), 0, 2);
-        Controls.Add(root);
+        _savePathPanel.Paint += (_, e) =>
+        {
+            using var pen = new Pen(Theme.Border);
+            e.Graphics.DrawRectangle(pen, 0, 0, _savePathPanel.Width - 1, _savePathPanel.Height - 1);
+        };
+        _savePathPanel.Resize += (_, _) => _savePathPanel.Invalidate();
+        _savePathPanel.Controls.Add(_savePathBox);
+
+        Controls.AddRange(new Control[]
+        {
+            _formatLabel, _mipRadio, _drmRadio, _infoButton, _startButton,
+            _targetLabel, _targetCombo, _targetFind, _targetList,
+            _saveLabel, _saveCombo, _saveFind, _savePathPanel, _sameFolderCheck,
+            _statusLabel, _logButton, _statusList,
+            _resetButton, _closeButton,
+        });
+        foreach (Control c in Controls) c.Margin = Padding.Empty;
+        _tip.SetToolTip(_infoButton, "프로그램 정보");
 
         _targetMenu.Items.Add("목록에서 제외", null, (_, _) => RemoveSelectedTargets());
         _findMenu.Items.Add("파일 선택...", null, (_, _) => BrowseLocalFiles());
         _findMenu.Items.Add("폴더 선택...", null, (_, _) => BrowseLocalFolder());
         _targetList.ContextMenuStrip = _targetMenu;
-        ResumeLayout(true);
+        ResumeLayout(false);
     }
 
-    private Control BuildHeader()
+    protected override void OnLayout(LayoutEventArgs e)
     {
-        var header = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill, ColumnCount = 6, RowCount = 1,
-            Padding = new Padding(12, 0, 12, 0), Margin = Padding.Empty,
-        };
-        header.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-        header.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-        header.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-        header.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        header.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-        header.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-        header.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        base.OnLayout(e);
+        LayoutControls();
+    }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        base.OnPaint(e);
         // 상단 메뉴 아래 구분선
-        header.Paint += (_, e) =>
-        {
-            using var pen = new Pen(Theme.HeaderSeparator);
-            e.Graphics.DrawLine(pen, Px(10), header.Height - 1, header.Width - Px(10), header.Height - 1);
-        };
-        header.Resize += (_, _) => header.Invalidate();
-
-        _formatLabel.Anchor = AnchorStyles.Left;
-        _formatLabel.Margin = new Padding(0, 0, 14, 0);
-        foreach (var radio in new[] { _mipRadio, _drmRadio })
-        {
-            radio.Anchor = AnchorStyles.Left;
-            radio.Margin = new Padding(10, 0, 10, 0);
-        }
-        _infoButton.Anchor = AnchorStyles.Right;
-        _startButton.Anchor = AnchorStyles.Right;
-        _startButton.Margin = Padding.Empty;
-
-        header.Controls.Add(_formatLabel, 0, 0);
-        header.Controls.Add(_mipRadio, 1, 0);
-        header.Controls.Add(_drmRadio, 2, 0);
-        header.Controls.Add(_infoButton, 4, 0);
-        header.Controls.Add(_startButton, 5, 0);
-        _tip.SetToolTip(_infoButton, "프로그램 정보");
-        return header;
+        using var pen = new Pen(Theme.HeaderSeparator);
+        var y = Px(SeparatorY);
+        e.Graphics.DrawLine(pen, Px(MarginLeft), y, ClientSize.Width - Px(MarginRight), y);
     }
 
-    private Control BuildContent()
+    protected override void OnResize(EventArgs e)
     {
-        // 디자인 가이드(1): 좌(대상) : 우(저장/상태) = 6 : 4, 사이 여백 10px
-        var content = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, Padding = new Padding(10, 10, 10, 0), Margin = Padding.Empty,
-        };
-        content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60));
-        content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40));
-        content.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-
-        var left = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2, Margin = new Padding(0, 0, 5, 0) };
-        left.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
-        left.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        left.Controls.Add(BuildSectionHeader(_targetLabel, _targetCombo, _targetFind), 0, 0);
-        left.Controls.Add(_targetList, 0, 1);
-
-        var right = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 5, Margin = new Padding(5, 0, 0, 0) };
-        right.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
-        right.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
-        right.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-        right.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
-        right.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        right.Controls.Add(BuildSectionHeader(_saveLabel, _saveCombo, _saveFind), 0, 0);
-        _savePathBox.Margin = new Padding(0, 2, 0, 2);
-        right.Controls.Add(_savePathBox, 0, 1);
-        _sameFolderCheck.Anchor = AnchorStyles.Left;
-        _sameFolderCheck.Margin = new Padding(2, 0, 0, 0);
-        right.Controls.Add(_sameFolderCheck, 0, 2);
-        right.Controls.Add(BuildSectionHeader(_statusLabel, null, _logButton), 0, 3);
-        right.Controls.Add(_statusList, 0, 4);
-
-        content.Controls.Add(left, 0, 0);
-        content.Controls.Add(right, 1, 0);
-        return content;
+        base.OnResize(e);
+        Invalidate();
     }
 
-    private static Control BuildSectionHeader(Label label, ComboBox? combo, Button button)
+    /// <summary>모든 컨트롤 배치 (96 DPI 기준 값을 현재 DPI 로 환산)</summary>
+    private void LayoutControls()
     {
-        var panel = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 3, RowCount = 1, Margin = Padding.Empty };
-        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-        panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        label.Anchor = AnchorStyles.Left;
-        label.Margin = new Padding(0);
-        panel.Controls.Add(label, 0, 0);
-        if (combo is not null)
-        {
-            combo.Anchor = AnchorStyles.Right;
-            combo.Margin = new Padding(0, 0, 6, 0);
-            panel.Controls.Add(combo, 1, 0);
-        }
-        button.Anchor = AnchorStyles.Right;
-        button.Margin = Padding.Empty;
-        panel.Controls.Add(button, 2, 0);
-        return panel;
+        if (_statusList.Columns.Count == 0) return;
+        var w = ClientSize.Width;
+        var h = ClientSize.Height;
+        if (w <= 0 || h <= 0) return;
+
+        var left = Px(MarginLeft);
+        var right = w - Px(MarginRight);
+        var available = right - left - Px(ColumnGap);
+        var rightWidth = Math.Max(Px(RightColumnWidth), (int)Math.Round(available * RightColumnRatio));
+        var leftWidth = Math.Max(Px(200), available - rightWidth);
+        var leftEnd = left + leftWidth;
+        var rightStart = leftEnd + Px(ColumnGap);
+        var listBottom = h - Px(ListBottomGap);
+        var footerTop = h - Px(FooterBottomGap);
+
+        // 상단 메뉴
+        CenterY(_formatLabel, left - Px(3), HeaderTop, HeaderHeight);
+        CenterY(_mipRadio, left + Px(110), HeaderTop, HeaderHeight);
+        CenterY(_drmRadio, left + Px(239), HeaderTop, HeaderHeight);
+        _startButton.SetBounds(right - Px(119), Px(HeaderTop), Px(119), Px(HeaderHeight));
+        _infoButton.SetBounds(_startButton.Left - Px(13) - Px(18), Px(HeaderTop) + (Px(HeaderHeight) - Px(18)) / 2, Px(18), Px(18));
+
+        // 대상 파일 / 폴더
+        CenterY(_targetLabel, left - Px(3), SectionTop, ControlHeight);
+        _targetFind.SetBounds(leftEnd - Px(FindWidth), Px(SectionTop), Px(FindWidth), Px(ControlHeight));
+        CenterY(_targetCombo, _targetFind.Left - Px(ComboGap) - Px(ComboWidth), SectionTop, ControlHeight, Px(ComboWidth));
+        _targetList.SetBounds(left, Px(ListTop), leftWidth, Math.Max(Px(60), listBottom - Px(ListTop)));
+
+        // 저장 위치
+        CenterY(_saveLabel, rightStart, SectionTop, ControlHeight);
+        _saveFind.SetBounds(right - Px(FindWidth), Px(SectionTop), Px(FindWidth), Px(ControlHeight));
+        CenterY(_saveCombo, _saveFind.Left - Px(ComboGap) - Px(ComboWidth), SectionTop, ControlHeight, Px(ComboWidth));
+        _savePathPanel.SetBounds(rightStart, Px(PathTop), right - rightStart, Px(PathHeight));
+        _savePathBox.SetBounds(Px(6), (_savePathPanel.Height - _savePathBox.Height) / 2, _savePathPanel.Width - Px(12), _savePathBox.Height);
+        _sameFolderCheck.Location = new Point(rightStart + Px(1), Px(CheckCenterY) - _sameFolderCheck.Height / 2);
+
+        // 변환 상태
+        CenterY(_statusLabel, rightStart, StatusHeaderTop, StatusHeaderHeight);
+        _logButton.SetBounds(right - Px(100), Px(StatusHeaderTop), Px(100), Px(StatusHeaderHeight));
+        _statusList.SetBounds(rightStart, Px(StatusListTop), right - rightStart, Math.Max(Px(60), listBottom - Px(StatusListTop)));
+
+        // 하단
+        _resetButton.SetBounds(left, footerTop, Px(118), Px(ControlHeight));
+        _closeButton.SetBounds(right - Px(80), footerTop, Px(80), Px(ControlHeight));
+
+        LayoutColumns();
     }
 
-    private Control BuildFooter()
+    /// <summary>top/height(96 DPI 기준) 영역의 세로 가운데에 배치</summary>
+    private void CenterY(Control control, int x, int top, int height, int? width = null)
     {
-        var footer = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, Padding = new Padding(10, 8, 10, 10), Margin = Padding.Empty };
-        footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-        footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-        footer.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        _resetButton.Anchor = AnchorStyles.Left;
-        _resetButton.Margin = Padding.Empty;
-        _closeButton.Anchor = AnchorStyles.Right;
-        _closeButton.Margin = Padding.Empty;
-        footer.Controls.Add(_resetButton, 0, 0);
-        footer.Controls.Add(_closeButton, 1, 0);
-        return footer;
+        if (width is { } wv) control.Width = wv;
+        control.Location = new Point(x, Px(top) + (Px(height) - control.Height) / 2);
     }
 
     private void LayoutColumns()
     {
-        // 디자인 가이드(1)-2: 크기/암호화 컬럼은 우측 고정, 창 크기 조절 시 파일/폴더명 컬럼 크기가 변경
-        // V1.2: 경로는 가장 뒤 컬럼. 파일명을 우선 표시하고 좁아지면 경로는 뒤로 스크롤
-        var t = _targetList.ClientSize.Width - Px(2);
-        int size = Px(76), enc = Px(64), path = Px(240);
+        // 크기/암호화 컬럼 고정, 창 크기 조절 시 파일/폴더명 컬럼 크기가 변경 (디자인 가이드(1)-2)
+        // 경로는 가장 뒤 컬럼(V1.2): 내용 길이만큼 넓히고, 보이지 않는 부분은 가로 스크롤
+        var t = _targetList.ClientSize.Width;
+        int size = Px(84), enc = Px(89);
+        var name = Math.Max(Px(150), t - size - enc - Px(82));
+        var pathContent = Px(240);
+        foreach (ListViewItem item in _targetList.Items)
+            pathContent = Math.Max(pathContent, TextRenderer.MeasureText(item.SubItems[3].Text, _targetList.Font).Width + Px(16));
+        _targetList.Columns[0].Width = name;
         _targetList.Columns[1].Width = size;
         _targetList.Columns[2].Width = enc;
-        var name = Math.Max(Px(180), t - size - enc - path);
-        _targetList.Columns[0].Width = name;
-        _targetList.Columns[3].Width = Math.Max(path, t - name - size - enc);
+        _targetList.Columns[3].Width = Math.Max(pathContent, t - name - size - enc);
 
-        // 파일명 : 진행 상태 = 2 : 1, 진행 상태 우측 고정
-        var s = _statusList.ClientSize.Width - Px(2);
-        var status = Math.Max(Px(100), s / 3);
+        // 진행 상태 컬럼 고정, 파일명 컬럼이 나머지
+        var s = _statusList.ClientSize.Width;
+        var status = Px(134);
         _statusList.Columns[1].Width = status;
-        _statusList.Columns[0].Width = Math.Max(Px(120), s - status);
+        _statusList.Columns[0].Width = Math.Max(Px(100), s - status - Px(28));
     }
 
     // ───────────────────────────── 이벤트 연결 ─────────────────────────────
@@ -284,7 +277,6 @@ internal sealed partial class MainForm : ThemedForm
         _targetList.DragDrop += OnTargetDragDrop;
         _targetList.MouseMove += (_, e) => UpdateListTooltip(_targetList, e.Location);
         _targetList.MouseLeave += (_, _) => HideListTooltip();
-        _targetList.Resize += (_, _) => LayoutColumns();
         _targetMenu.Opening += (_, e) =>
         {
             _targetMenu.Items[0].Enabled = !_running && _targetList.SelectedItems.Count > 0;
@@ -296,7 +288,6 @@ internal sealed partial class MainForm : ThemedForm
         _statusList.DrawSubItem += DrawStatusSubItem;
         _statusList.MouseMove += (_, e) => UpdateListTooltip(_statusList, e.Location);
         _statusList.MouseLeave += (_, _) => HideListTooltip();
-        _statusList.Resize += (_, _) => LayoutColumns();
         _statusList.DoubleClick += (_, _) => RevealSelectedOutput();
     }
 
@@ -608,6 +599,7 @@ internal sealed partial class MainForm : ThemedForm
             _targetList.Items.Add(row);
         }
         _targetList.EndUpdate();
+        LayoutColumns();
         RefreshTargetCombo();
         UpdateUiState();
     }

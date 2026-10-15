@@ -7,10 +7,13 @@ internal sealed class ShellIcons
 {
     public const string FolderKey = "<folder>";
     private readonly ImageList _images;
+    private readonly int _padding;
 
-    public ShellIcons(ImageList images)
+    /// <param name="padding">목록 행 높이를 키우기 위해 아이콘 위아래에 둘 여백(px). 이미지 크기는 ImageList.ImageSize</param>
+    public ShellIcons(ImageList images, int padding = 0)
     {
         _images = images;
+        _padding = padding;
     }
 
     public string KeyFor(string path, bool isFolder)
@@ -21,14 +24,19 @@ internal sealed class ShellIcons
             return key;
 
         var icon = Load(isFolder ? "folder" : "file" + key, isFolder);
-        if (icon is not null)
+        icon ??= (Icon)(isFolder ? SystemIcons.WinLogo : SystemIcons.Application).Clone();
+        if (_padding == 0)
         {
             _images.Images.Add(key, icon);
+            return key;
         }
-        else
-        {
-            _images.Images.Add(key, isFolder ? SystemIcons.WinLogo : SystemIcons.Application);
-        }
+        var size = _images.ImageSize;
+        var side = Math.Max(1, size.Height - 2 * _padding);
+        var bitmap = new Bitmap(size.Width, size.Height);
+        using (var g = Graphics.FromImage(bitmap))
+            g.DrawIcon(icon, new Rectangle(0, _padding, side, side));
+        icon.Dispose();
+        _images.Images.Add(key, bitmap);
         return key;
     }
 

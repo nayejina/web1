@@ -64,6 +64,29 @@ internal sealed partial class MainForm
         var summary = new RunSummary();
         var completed = new List<TargetItem>();
 
+        // 실제 툴과 같이 변환할 파일을 먼저 모두 "준비 중"으로 올려 두고 순서대로 진행
+        var rows = new Dictionary<string, StatusRow>(StringComparer.OrdinalIgnoreCase);
+        _statusList.BeginUpdate();
+        foreach (var target in targets)
+        {
+            rows[target.FullPath] = AddStatusRow(new StatusRow
+            {
+                Name = target.Name, IconKey = _shellIcons.KeyFor(target.FullPath, target.IsFolder), IsFolder = target.IsFolder,
+                Style = StatusStyle.Pending, Text = "준비 중",
+            }, ensureVisible: false);
+            if (!target.IsFolder) continue;
+            // 폴더 안의 변환 대상이 아닌 파일은 상태 목록에 올리지 않고 로그에만 남긴다
+            foreach (var file in folderFiles[target].Where(f => _services.Engine.CheckEligibility(f.Path).Convertible))
+            {
+                rows[file.Path] = AddStatusRow(new StatusRow
+                {
+                    Name = Path.GetFileName(file.Path), IconKey = _shellIcons.KeyFor(file.Path, false),
+                    Style = StatusStyle.Pending, Text = "준비 중",
+                }, ensureVisible: false);
+            }
+        }
+        _statusList.EndUpdate();
+
         try
         {
             foreach (var target in targets)
@@ -71,18 +94,17 @@ internal sealed partial class MainForm
                 if (_stopRequested) break;
                 if (!target.IsFolder)
                 {
-                    var code = await ProcessFile(target.FullPath, "", target.Eligibility, planner, format, jobId, summary, showRow: true);
+                    var code = await ProcessFile(target.FullPath, "", target.Eligibility, planner, format, jobId, summary, rows[target.FullPath]);
                     if (_services.Classification.GroupForCode(code).Style == "Success")
                         completed.Add(target);
                     continue;
                 }
 
                 // V1.3: 폴더 변환 시작/종료 알림 (선택한 폴더에 한해, 하위 폴더는 표시하지 않음)
-                var folderRow = AddStatusRow(new StatusRow
-                {
-                    Name = target.Name, IconKey = _shellIcons.KeyFor(target.FullPath, true), IsFolder = true,
-                    Style = StatusStyle.Info, Text = "변환 시작",
-                });
+                var folderRow = rows[target.FullPath];
+                folderRow.Style = StatusStyle.Info;
+                folderRow.Text = "변환 시작";
+                RefreshRow(folderRow);
                 Log(ResultCodes.FolderStarted, format, target.FullPath, "", jobId);
                 var folderFailed = false;
                 foreach (var file in folderFiles[target])
@@ -91,7 +113,7 @@ internal sealed partial class MainForm
                     var eligibility = _services.Engine.CheckEligibility(file.Path);
                     // 폴더 안의 변환 대상이 아닌 파일은 상태 목록에 올리지 않고 로그에만 남긴다
                     var code = await ProcessFile(file.Path, file.RelativeDirectory, eligibility, planner, format, jobId, summary,
-                        showRow: eligibility.Convertible);
+                        rows.GetValueOrDefault(file.Path));
                     if (_services.Classification.GroupForCode(code).Style == "Fail") folderFailed = true;
                 }
                 var stoppedInFolder = _stopRequested;
@@ -105,6 +127,9 @@ internal sealed partial class MainForm
         finally
         {
             var stopped = _stopRequested;
+            foreach (var pending in rows.Values.Where(r => r.Style == StatusStyle.Pending))
+                pending.Text = "중지됨";
+            _statusList.Invalidate();
             _running = false;
             _stopRequested = false;
 
@@ -162,12 +187,14 @@ internal sealed partial class MainForm
 
     /// <summary>파일 1개 처리 + 진행 상태 애니메이션. 반환값: 결과 코드</summary>
     private async Task<int> ProcessFile(string path, string relativeDirectory, Eligibility eligibility, DestinationPlanner planner,
-        ConversionFormat format, string jobId, RunSummary summary, bool showRow)
+        ConversionFormat format, string jobId, RunSummary summary, StatusRow? row)
     {
-        StatusRow? row = null;
-        if (showRow)
+        if (row is not null)
         {
-            row = AddStatusRow(new StatusRow { Name = Path.GetFileName(path), IconKey = _shellIcons.KeyFor(path, false) });
+            row.Style = StatusStyle.Running;
+            row.Progress = 0;
+            EnsureVisible(row);
+            RefreshRow(row);
         }
 
         int code;
@@ -262,13 +289,25 @@ internal sealed partial class MainForm
         }
     }
 
-    private StatusRow AddStatusRow(StatusRow row)
+    private StatusRow AddStatusRow(StatusRow row, bool ensureVisible = true)
     {
         var item = new ListViewItem(row.Name, row.IconKey) { Tag = row };
         item.SubItems.Add("");
         _statusList.Items.Add(item);
-        item.EnsureVisible();
+        if (ensureVisible) item.EnsureVisible();
         return row;
+    }
+
+    private void EnsureVisible(StatusRow row)
+    {
+        foreach (ListViewItem item in _statusList.Items)
+        {
+            if (ReferenceEquals(item.Tag, row))
+            {
+                item.EnsureVisible();
+                return;
+            }
+        }
     }
 
     private void RefreshRow(StatusRow row)
@@ -332,7 +371,8 @@ internal sealed partial class MainForm
             return;
         }
 
-        var bar = Rectangle.Inflate(bounds, -Px(6), -Px(3));
+        // 실제 툴: 셀을 거의 채우는 막대, 진행 #1E90FF + 흰 글자, 준비 중은 흰 칸 + 회색 테두리
+        var bar = Rectangle.Inflate(bounds, -Px(2), -Px(2));
         if (bar.Width <= 4 || bar.Height <= 4) return;
         using (var track = new SolidBrush(Theme.ProgressTrack)) g.FillRectangle(track, bar);
 
@@ -341,6 +381,8 @@ internal sealed partial class MainForm
         var percent = row.Progress;
         switch (row.Style)
         {
+            case StatusStyle.Pending:
+                fill = Theme.ProgressTrack; percent = 0; text = row.Text; break;
             case StatusStyle.Fail:
                 fill = Theme.ProgressFail; percent = 100; text = row.Text; break;
             case StatusStyle.Skip:
@@ -352,12 +394,23 @@ internal sealed partial class MainForm
         }
         var filled = new Rectangle(bar.X, bar.Y, bar.Width * Math.Clamp(percent, 0, 100) / 100, bar.Height);
         using (var brush = new SolidBrush(fill)) g.FillRectangle(brush, filled);
-        using (var pen = new Pen(Theme.ProgressBorder)) g.DrawRectangle(pen, bar.X, bar.Y, bar.Width - 1, bar.Height - 1);
+        if (percent < 100)
+        {
+            using var pen = new Pen(Theme.PendingBorder);
+            g.DrawRectangle(pen, bar.X, bar.Y, bar.Width - 1, bar.Height - 1);
+        }
 
-        var textColor = row.Style is StatusStyle.Fail or StatusStyle.Skip ? Color.Black
-            : percent >= 50 ? Color.White : Color.Black;
-        using var small = new Font(_statusList.Font.FontFamily, _statusList.Font.Size * 0.9f);
-        TextRenderer.DrawText(g, text, small, bar, textColor,
-            TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter | TextFormatFlags.SingleLine);
+        const TextFormatFlags flags = TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter | TextFormatFlags.SingleLine;
+        if (row.Style is StatusStyle.Fail or StatusStyle.Skip or StatusStyle.Pending)
+        {
+            TextRenderer.DrawText(g, text, _statusList.Font, bar, Color.Black, flags);
+            return;
+        }
+        // 파란 부분 위 글자는 흰색, 나머지는 검정
+        TextRenderer.DrawText(g, text, _statusList.Font, bar, Color.Black, flags);
+        var state = g.Save();
+        g.SetClip(filled);
+        TextRenderer.DrawText(g, text, _statusList.Font, bar, Color.White, flags);
+        g.Restore(state);
     }
 }

@@ -55,7 +55,7 @@ internal sealed class AboutForm : ThemedForm
             AutoSize = true,
             ForeColor = Theme.Warning,
             Font = Theme.Bold(),
-            MaximumSize = new Size(420, 0),
+            MaximumSize = new Size(560, 0),
             Margin = new Padding(0, 0, 0, 12),
         };
 
@@ -64,7 +64,7 @@ internal sealed class AboutForm : ThemedForm
         buttons.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         buttons.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-        var samples = new FlatButton("샘플 폴더 열기") { Width = 110, Margin = new Padding(0, 0, 6, 0) };
+        var samples = new FlatButton("샘플 폴더 열기") { Width = 130, Margin = new Padding(0, 0, 6, 0) };
         _menuButton.Margin = new Padding(0, 0, 6, 0);
         var close = new FlatButton("닫기") { Width = 80, DialogResult = DialogResult.OK, Margin = Padding.Empty };
         buttons.Controls.Add(_menuButton, 0, 0);
@@ -73,7 +73,7 @@ internal sealed class AboutForm : ThemedForm
         AcceptButton = close;
         CancelButton = close;
 
-        var root = new TableLayoutPanel { AutoSize = true, ColumnCount = 1, RowCount = 5, Dock = DockStyle.Fill, MinimumSize = new Size(440, 0) };
+        var root = new TableLayoutPanel { AutoSize = true, ColumnCount = 1, RowCount = 5, Dock = DockStyle.Fill, MinimumSize = new Size(500, 0) };
         root.Controls.Add(top, 0, 0);
         root.Controls.Add(copyright, 0, 1);
         root.Controls.Add(separator, 0, 2);
@@ -99,8 +99,11 @@ internal sealed class AboutForm : ThemedForm
 
     private bool Registered => ContextMenuRegistrar.IsRegistered(_services.Rules.AllowedExtensions);
 
-    private void UpdateMenuButton() =>
+    private void UpdateMenuButton()
+    {
         _menuButton.Text = Registered ? "탐색기 우클릭 메뉴 해제" : "탐색기 우클릭 메뉴 등록";
+        _menuButton.Width = _menuButton.PreferredWidthFor(_menuButton.Text);
+    }
 
     private void ToggleContextMenu()
     {
