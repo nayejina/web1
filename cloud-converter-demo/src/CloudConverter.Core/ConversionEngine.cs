@@ -58,7 +58,7 @@ public sealed class ConversionEngine
             {
                 if (state == ProtectionState.Mip)
                     return ResultCodes.AlreadyMip;
-                if (LooksEncrypted(info))
+                if (Policy.Demo.DetectEncryptedFiles && LooksEncrypted(info))
                     return ResultCodes.AlreadyEncrypted;
             }
             else if (state == ProtectionState.Drm)

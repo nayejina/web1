@@ -66,9 +66,9 @@ public sealed class LogClassification
         {
             new() { Code = ResultCodes.MipSuccess, Group = "success", Category = "MIP 변환 성공", Reason = "MIP 레이블이 적용되었습니다." },
             new() { Code = ResultCodes.DrmSuccess, Group = "success", Category = "DRM 변환 성공", Reason = "DRM 문서로 변환되었습니다." },
-            new() { Code = ResultCodes.AlreadyMip, Group = "fail", Category = "이미 암호화된 파일", Reason = "이미 암호화된 파일" },
+            new() { Code = ResultCodes.AlreadyMip, Group = "fail", Category = "이미 암호화된 파일 (시연 변환 기록)", Reason = "이미 암호화된 파일 (이 프로그램으로 이미 변환한 파일)" },
             new() { Code = ResultCodes.AlreadyDrm, Group = "fail", Category = "이미 DRM 문서인 파일", Reason = "이미 DRM 문서인 파일" },
-            new() { Code = ResultCodes.AlreadyEncrypted, Group = "fail", Category = "이미 암호화된 파일", Reason = "이미 암호화된 파일" },
+            new() { Code = ResultCodes.AlreadyEncrypted, Group = "fail", Category = "이미 암호화된 파일 (암호화 감지)", Reason = "이미 암호화된 파일 (파일이 실제로 암호화되어 있음)" },
             new() { Code = ResultCodes.FileAccessError, Group = "fail", Category = "파일 접근 실패", Reason = "파일에 접근할 수 없습니다 (사용 중이거나 권한 없음)" },
             new() { Code = ResultCodes.DemoForcedFail, Group = "fail", Category = "레이블 변환 권한 없음", Reason = "레이블 변환 권한 없음" },
             new() { Code = ResultCodes.SourceNotFound, Group = "fail", Category = "원본 파일 없음", Reason = "원본 파일을 찾을 수 없습니다" },

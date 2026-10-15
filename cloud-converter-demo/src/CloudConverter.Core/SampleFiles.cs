@@ -164,23 +164,34 @@ public static class SampleFiles
         }
 
         if (IsEmpty(localSampleFolder))
+            CreateLocalSamples(localSampleFolder);
+    }
+
+    /// <summary>"시연 초기화": 샘플 문서 폴더를 지우고 처음 상태로 다시 만든다</summary>
+    public static void ResetLocalSamples(string localSampleFolder)
+    {
+        if (Directory.Exists(localSampleFolder))
+            Directory.Delete(localSampleFolder, recursive: true);
+        CreateLocalSamples(localSampleFolder);
+    }
+
+    private static void CreateLocalSamples(string localSampleFolder)
+    {
+        CreateDocx(Path.Combine(localSampleFolder, "제안서_초안.docx"), "제안서 초안\n시연용 샘플 문서입니다.");
+        CreateXlsx(Path.Combine(localSampleFolder, "견적서.xlsx"), new[]
         {
-            CreateDocx(Path.Combine(localSampleFolder, "제안서_초안.docx"), "제안서 초안\n시연용 샘플 문서입니다.");
-            CreateXlsx(Path.Combine(localSampleFolder, "견적서.xlsx"), new[]
-            {
-                new[] { "품목", "단가", "수량" }, new[] { "라이선스", "150000", "100" },
-            });
-            CreatePdf(Path.Combine(localSampleFolder, "Company Profile.pdf"), "CloudConverter demo - Company Profile");
-            CreateEncryptedLookingOffice(Path.Combine(localSampleFolder, "이미 암호화된 보고서.docx"));
-            File.WriteAllBytes(Path.Combine(localSampleFolder, "빈 파일.docx"), Array.Empty<byte>());
-            CreateDocx(Path.Combine(localSampleFolder, "권한없음_fail.docx"), "강제 실패 시연용 (파일명에 _fail)");
-            File.WriteAllText(Path.Combine(localSampleFolder, "readme.txt"), "지원하지 않는 확장자 시연용");
-            CreateDocx(Path.Combine(localSampleFolder, "프로젝트 폴더", "요구사항 정의서.docx"), "요구사항 정의서");
-            CreateXlsx(Path.Combine(localSampleFolder, "프로젝트 폴더", "일정표.xlsx"), new[]
-            {
-                new[] { "단계", "기간" }, new[] { "분석", "2주" }, new[] { "개발", "6주" },
-            });
-            CreateDocx(Path.Combine(localSampleFolder, "프로젝트 폴더", "산출물", "테스트 결과서.docx"), "테스트 결과서");
-        }
+            new[] { "품목", "단가", "수량" }, new[] { "라이선스", "150000", "100" },
+        });
+        CreatePdf(Path.Combine(localSampleFolder, "Company Profile.pdf"), "CloudConverter demo - Company Profile");
+        CreateEncryptedLookingOffice(Path.Combine(localSampleFolder, "이미 암호화된 보고서.docx"));
+        File.WriteAllBytes(Path.Combine(localSampleFolder, "빈 파일.docx"), Array.Empty<byte>());
+        CreateDocx(Path.Combine(localSampleFolder, "권한없음_fail.docx"), "강제 실패 시연용 (파일명에 _fail)");
+        File.WriteAllText(Path.Combine(localSampleFolder, "readme.txt"), "지원하지 않는 확장자 시연용");
+        CreateDocx(Path.Combine(localSampleFolder, "프로젝트 폴더", "요구사항 정의서.docx"), "요구사항 정의서");
+        CreateXlsx(Path.Combine(localSampleFolder, "프로젝트 폴더", "일정표.xlsx"), new[]
+        {
+            new[] { "단계", "기간" }, new[] { "분석", "2주" }, new[] { "개발", "6주" },
+        });
+        CreateDocx(Path.Combine(localSampleFolder, "프로젝트 폴더", "산출물", "테스트 결과서.docx"), "테스트 결과서");
     }
 }

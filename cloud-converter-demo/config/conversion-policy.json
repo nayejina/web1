@@ -54,6 +54,7 @@
       "_skip",
       "[스킵]"
     ],
+    "DetectEncryptedFiles": true,
     "SimulatedSpeedMBps": 40,
     "MinFileDurationMs": 700,
     "MaxFileDurationMs": 4000

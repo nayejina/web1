@@ -226,7 +226,7 @@ public class LogTests
         LogStore.Export(export, entries, LogClassification.CreateDefault());
         var rows = Csv.Parse(File.ReadAllText(export)).ToList();
         Assert.Equal("실패", rows[1][0]);
-        Assert.Equal("이미 암호화된 파일", rows[1][2]);
+        Assert.Equal("이미 암호화된 파일 (시연 변환 기록)", rows[1][2]);
     }
 
     [Fact]
@@ -258,5 +258,59 @@ public class SampleTests
         Assert.True(File.Exists(dir.File("samples", "프로젝트 폴더", "산출물", "테스트 결과서.docx")));
         using var zip = System.IO.Compression.ZipFile.OpenRead(dir.File("samples", "견적서.xlsx"));
         Assert.NotNull(zip.GetEntry("xl/worksheets/sheet1.xml"));
+    }
+}
+
+public class DemoResetTests
+{
+    [Fact]
+    public void DetectionCanBeDisabled()
+    {
+        using var dir = new TempDir();
+        var policy = ConversionPolicy.CreateDefault();
+        policy.Demo.DetectEncryptedFiles = false;
+        var engine = new ConversionEngine(ExtensionRules.CreateDefault(), policy, new ProtectionStateStore(dir.File("s.json")));
+        var encrypted = dir.File("enc.docx");
+        SampleFiles.CreateEncryptedLookingOffice(encrypted);
+        Assert.Equal(ResultCodes.MipSuccess, engine.Convert(encrypted, dir.File("o", "enc.docx"), ConversionFormat.Mip));
+    }
+
+    [Fact]
+    public void ClearAndResetSamplesAllowConvertingAgain()
+    {
+        using var dir = new TempDir();
+        var store = new ProtectionStateStore(dir.File("s.json"));
+        var engine = new ConversionEngine(ExtensionRules.CreateDefault(), ConversionPolicy.CreateDefault(), store);
+        var samples = dir.File("samples");
+        SampleFiles.EnsureDemoContent(dir.File("cloud"), new DemoSettings(), samples);
+        var docx = Path.Combine(samples, "제안서_초안.docx");
+
+        Assert.Equal(ResultCodes.MipSuccess, engine.Convert(docx, docx, ConversionFormat.Mip));
+        Assert.Equal(ResultCodes.AlreadyMip, engine.Convert(docx, docx, ConversionFormat.Mip));
+
+        File.WriteAllText(Path.Combine(samples, "extra.txt"), "x");
+        store.Clear();
+        SampleFiles.ResetLocalSamples(samples);
+        Assert.False(File.Exists(Path.Combine(samples, "extra.txt")));
+        Assert.Equal(ResultCodes.MipSuccess, engine.Convert(docx, docx, ConversionFormat.Mip));
+    }
+
+    [Fact]
+    public void FreshSamplesConvertAsDocumented()
+    {
+        using var dir = new TempDir();
+        var engine = new ConversionEngine(ExtensionRules.CreateDefault(), ConversionPolicy.CreateDefault(),
+            new ProtectionStateStore(dir.File("s.json")));
+        var samples = dir.File("samples");
+        SampleFiles.EnsureDemoContent(dir.File("cloud"), new DemoSettings(), samples);
+        int Run(string name) => engine.Convert(Path.Combine(samples, name), dir.File("out", name), ConversionFormat.Mip);
+
+        Assert.Equal(ResultCodes.MipSuccess, Run("제안서_초안.docx"));
+        Assert.Equal(ResultCodes.MipSuccess, Run("견적서.xlsx"));
+        Assert.Equal(ResultCodes.MipSuccess, Run("Company Profile.pdf"));
+        Assert.Equal(ResultCodes.AlreadyEncrypted, Run("이미 암호화된 보고서.docx"));
+        Assert.Equal(ResultCodes.EmptyFile, Run("빈 파일.docx"));
+        Assert.Equal(ResultCodes.DemoForcedFail, Run("권한없음_fail.docx"));
+        Assert.Equal(ResultCodes.UnsupportedExtension, Run("readme.txt"));
     }
 }

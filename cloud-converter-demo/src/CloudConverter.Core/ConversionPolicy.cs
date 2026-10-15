@@ -87,6 +87,12 @@ public sealed class DemoRules
     /// <summary>파일 이름에 포함되면 정책에 의한 "스킵" 처리 (시연용)</summary>
     public List<string> ForceSkipKeywords { get; set; } = new() { "_skip", "[스킵]" };
 
+    /// <summary>
+    /// 파일 내용이 실제로 암호화(MIP/IRM/암호)되어 있으면 "이미 암호화된 파일"로 실패 처리.
+    /// 시연 PC 의 보안 프로그램이 샘플 문서를 자동으로 암호화하는 환경이라면 false 로 끈다.
+    /// </summary>
+    public bool DetectEncryptedFiles { get; set; } = true;
+
     /// <summary>진행 표시용 가상 변환 속도 (MB/s)</summary>
     public double SimulatedSpeedMBps { get; set; } = 40;
 
