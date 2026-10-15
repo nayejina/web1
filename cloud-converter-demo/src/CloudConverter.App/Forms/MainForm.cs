@@ -80,9 +80,9 @@ internal sealed partial class MainForm : ThemedForm
 
         Text = services.Settings.WindowTitle;
         StartPosition = FormStartPosition.CenterScreen;
-        // 디자인 가이드(1): 기본 1050 * 632, 최소 859 * 461, 최대 제한 없음
+        // 디자인 가이드(1): 기본 1050 * 632, 최대 제한 없음. 최소 너비는 오른쪽 열 폭의 2배, 최소 높이 461
         Size = new Size(1050, 632);
-        MinimumSize = new Size(859, 461);
+        MinimumSize = new Size(RightColumnWidth * 2, 461);
         KeyPreview = true;
         DoubleBuffered = true;
 
@@ -197,7 +197,9 @@ internal sealed partial class MainForm : ThemedForm
         // 대상 파일 / 폴더
         CenterY(_targetLabel, left - Px(3), SectionTop, ControlHeight);
         _targetFind.SetBounds(leftEnd - Px(FindWidth), Px(SectionTop), Px(FindWidth), Px(ControlHeight));
-        CenterY(_targetCombo, _targetFind.Left - Px(ComboGap) - Px(ComboWidth), SectionTop, ControlHeight, Px(ComboWidth));
+        // 왼쪽 열이 좁아지면 제목과 겹치지 않도록 콤보 폭을 줄인다
+        var targetComboWidth = Math.Clamp(_targetFind.Left - Px(ComboGap) - (_targetLabel.Right + Px(8)), Px(90), Px(ComboWidth));
+        CenterY(_targetCombo, _targetFind.Left - Px(ComboGap) - targetComboWidth, SectionTop, ControlHeight, targetComboWidth);
         _targetList.SetBounds(left, Px(ListTop), leftWidth, Math.Max(Px(60), listBottom - Px(ListTop)));
 
         // 저장 위치

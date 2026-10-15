@@ -39,16 +39,8 @@ internal static class Theme
     public static readonly Color Accent = ColorTranslator.FromHtml("#0078D4");
     public static readonly Color Warning = ColorTranslator.FromHtml("#C42B1C");
 
-    /// <summary>
-    /// 화면 글꼴: Windows 기본 UI 글꼴(메시지 상자 글꼴, 한국어 Windows 는 맑은 고딕).
-    /// 크기는 실제 Converter 툴 화면에서 잰 글자 크기·콤보 높이(30px)·목록 행 높이(25px)에 맞춘 값.
-    /// </summary>
-    public const float UiFontSize = 11f;
-
-    public static Font Ui(FontStyle style = FontStyle.Regular) =>
-        new((SystemFonts.MessageBoxFont ?? Control.DefaultFont).FontFamily, UiFontSize, style);
-
-    public static Font Bold() => Ui(FontStyle.Bold);
+    /// <summary>Windows 기본 폰트 (Control.DefaultFont) 의 굵은 글꼴</summary>
+    public static Font Bold() => new(Control.DefaultFont, FontStyle.Bold);
 
     public static Icon AppIcon
     {
@@ -67,7 +59,6 @@ internal class ThemedForm : Form
     {
         AutoScaleDimensions = new SizeF(96F, 96F);
         AutoScaleMode = AutoScaleMode.Dpi;
-        Font = Theme.Ui();
         BackColor = Theme.WindowBack;
         Icon = Theme.AppIcon;
     }
