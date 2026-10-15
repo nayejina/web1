@@ -71,6 +71,24 @@
       "Reason": "원본 파일을 찾을 수 없습니다"
     },
     {
+      "Code": 2007,
+      "Group": "fail",
+      "Category": "MIP 처리 오류",
+      "Reason": "MIP 처리 중 오류가 발생했습니다 (로그 상세 보기 참고)"
+    },
+    {
+      "Code": 2008,
+      "Group": "fail",
+      "Category": "네트워크 오류",
+      "Reason": "Microsoft 365 서비스에 연결할 수 없습니다"
+    },
+    {
+      "Code": 2009,
+      "Group": "fail",
+      "Category": "레이블 변경 사유 필요",
+      "Reason": "레이블을 낮추거나 제거하려면 사유가 필요합니다"
+    },
+    {
       "Code": 3001,
       "Group": "skip",
       "Category": "대상 확장자가 아닌 경우",
@@ -99,6 +117,12 @@
       "Group": "skip",
       "Category": "사용자 작업 중지",
       "Reason": "사용자가 작업을 중지했습니다"
+    },
+    {
+      "Code": 3006,
+      "Group": "skip",
+      "Category": "보호되지 않은 파일",
+      "Reason": "MIP 보호가 적용되지 않은 파일"
     },
     {
       "Code": 9001,

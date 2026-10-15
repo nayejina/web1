@@ -200,6 +200,7 @@ internal sealed class LogViewerForm : ThemedForm
         };
         if (e.DestinationPath.Length > 0) lines.Add($"저장 경로: {e.DestinationPath}");
         lines.Add($"부가 정보: '{e.JobId}'");
+        if (e.Detail.Length > 0) lines.Add($"상세 메시지: {e.Detail}");
         _detail.Text = string.Join(Environment.NewLine, lines);
     }
 

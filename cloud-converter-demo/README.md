@@ -138,15 +138,21 @@
 - 등록 위치: `HKCU\Software\Classes\SystemFileAssociations\<확장자>\shell\CloudConverterDemo`, `HKCU\Software\Classes\Directory\shell\CloudConverterDemo`
 - **Windows 11** 의 새 우클릭 메뉴(첫 화면)에는 코드 서명된 패키지 앱만 들어갈 수 있어, 이 시연 버전은 **"더 많은 옵션 표시"(또는 Shift+우클릭 / Shift+F10)** 메뉴에 나타납니다.
 
+## MIP 버전 (실제 변환, 별도 빌드)
+
+같은 소스에서 MIP SDK 로 실제 레이블/보호를 적용하는 `CloudConverterMip.exe` 를 따로 빌드할 수 있습니다. 인터넷 연결과 Microsoft 365 로그인이 필요해 시연판과 분리했습니다. 설정 방법은 [README-MIP.md](README-MIP.md) 참고.
+
 ## 빌드 (개발자용)
 
 ```powershell
 # Windows, .NET 8 SDK
-.\build.ps1      # 테스트 실행 → dist\CloudConverterDemo\ 와 dist\CloudConverterDemo.zip 생성
+.\build.ps1        # 테스트 실행 → 시연판(dist\CloudConverterDemo) + MIP 버전(dist\CloudConverterMip)
+.\build.ps1 -Demo  # 시연판만
 ```
 
 구성:
 - `src/CloudConverter.Core` - 정책, 확장자 규칙, 파일명 중복 규칙, 변환 엔진, 로그 (플랫폼 독립, 단위 테스트 대상)
 - `src/CloudConverter.App` - WinForms UI (메인 창, 클라우드 탐색 창, 로그 뷰어, 프로그램 정보, 우클릭 메뉴/단일 인스턴스)
 - `tests/CloudConverter.Core.Tests` - xUnit 테스트
-- `config/` - 기본 설정 파일 (빌드 시 exe 옆 `config` 폴더로 복사)
+- `src/CloudConverter.App/Mip` - MIP 버전 전용 코드 (MIP SDK 엔진, 로그인, 레이블 선택). `-p:Edition=Mip` 빌드에만 포함
+- `config/` - 시연판 기본 설정, `config-mip/` - MIP 버전 기본 설정 (빌드 시 exe 옆 `config` 폴더로 복사)

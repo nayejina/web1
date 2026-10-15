@@ -40,7 +40,7 @@ internal sealed record LaunchRequest(ConversionFormat? Format, IReadOnlyList<str
 /// </summary>
 internal sealed class SingleInstance : IDisposable
 {
-    private static readonly string Id = "CloudConverterDemo_" + Environment.UserName;
+    private static readonly string Id = AppEdition.InstanceName + "_" + Environment.UserName;
     private readonly Mutex _mutex;
     private readonly CancellationTokenSource _cts = new();
 

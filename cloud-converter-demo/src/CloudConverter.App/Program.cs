@@ -54,5 +54,6 @@ internal static class Program
         var form = new MainForm(services, request);
         instance.StartServer(r => form.EnqueueExternalRequest(r));
         Application.Run(form);
+        (services.Engine as IDisposable)?.Dispose();
     }
 }

@@ -1,3 +1,4 @@
+using CloudConverter.App.Services;
 using CloudConverter.App.UI;
 using CloudConverter.Core;
 
@@ -25,6 +26,10 @@ internal sealed partial class MainForm
         if (!MessageDialog.Confirm(this,
                 $"변환 대상 파일: {fileCount}개\n변환 대상 폴더: {folderCount}개\n\n" +
                 "실행된 작업은 취소가 불가능합니다. 계속하시겠습니까?\n(변환 불가능한 파일은 건너뛰고 진행합니다.)"))
+            return;
+
+        // MIP 버전: 로그인 / 적용할 레이블 선택 등 변환 전 준비
+        if (_services.Engine is IPreparableEngine preparable && !await preparable.PrepareAsync(format, this))
             return;
 
         var targets = TargetItems.ToList();
@@ -198,6 +203,7 @@ internal sealed partial class MainForm
         }
 
         int code;
+        var detail = "";
         string destination = "";
         if (!eligibility.Convertible)
         {
@@ -212,7 +218,10 @@ internal sealed partial class MainForm
             var dest = destination;
             var work = Task.Run(() => _services.Engine.Convert(path, dest, format));
             await AnimateUntil(row, work, duration);
-            code = await work;
+            var outcome = await work;
+            code = outcome.Code;
+            detail = outcome.Detail;
+            destination = outcome.OutputPath ?? destination;
         }
 
         var group = _services.Classification.GroupForCode(code);
@@ -245,11 +254,11 @@ internal sealed partial class MainForm
                 row.Style = StatusStyle.Skip;
                 row.Text = "SKIP";
             }
-            row.Reason = rule.Reason;
+            row.Reason = detail.Length == 0 ? rule.Reason : rule.Reason + "\n" + detail;
             RefreshRow(row);
         }
 
-        Log(code, format, path, group.Style == "Success" ? destination : "", jobId);
+        Log(code, format, path, group.Style == "Success" ? destination : "", jobId, detail);
         return code;
     }
 
@@ -322,7 +331,7 @@ internal sealed partial class MainForm
         }
     }
 
-    private void Log(int code, ConversionFormat format, string source, string destination, string jobId)
+    private void Log(int code, ConversionFormat format, string source, string destination, string jobId, string detail = "")
     {
         try
         {
@@ -335,6 +344,7 @@ internal sealed partial class MainForm
                 SourcePath = DisplayOf(source),
                 DestinationPath = destination.Length == 0 ? "" : DisplayOf(destination),
                 JobId = jobId,
+                Detail = detail,
             });
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }

@@ -1,0 +1,11 @@
+{
+  "WindowTitle": "CloudConverter",
+  "ProductName": "CloudConverter (MIP)",
+  "Account": "",
+  "Version": "1.4.0 (MIP)",
+  "Copyright": "Copyright (C) 2025 Ableinfo Corp. - All rights reserved.",
+  "CloudRoot": "",
+  "SharePointSites": [],
+  "CreateSampleFiles": false,
+  "AutoRegisterContextMenu": true
+}

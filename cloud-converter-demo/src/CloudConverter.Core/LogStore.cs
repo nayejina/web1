@@ -12,6 +12,8 @@ public sealed class LogEntry
     public string SourcePath { get; set; } = "";
     public string DestinationPath { get; set; } = "";
     public string JobId { get; set; } = "";
+    /// <summary>부가 메시지 (예: MIP SDK 오류 내용). 이전 버전 로그에는 없음</summary>
+    public string Detail { get; set; } = "";
 }
 
 /// <summary>
@@ -20,7 +22,8 @@ public sealed class LogEntry
 /// </summary>
 public sealed class LogStore
 {
-    private static readonly string[] Header = { "Time", "Code", "Format", "FileName", "SourcePath", "DestinationPath", "JobId" };
+    private static readonly string[] Header = { "Time", "Code", "Format", "FileName", "SourcePath", "DestinationPath", "JobId", "Detail" };
+    private const int RequiredColumns = 7;
     private readonly object _gate = new();
 
     public string Directory { get; }
@@ -49,6 +52,7 @@ public sealed class LogStore
                 entry.SourcePath,
                 entry.DestinationPath,
                 entry.JobId,
+                entry.Detail,
             }));
         }
     }
@@ -67,7 +71,7 @@ public sealed class LogStore
                     continue;
                 foreach (var fields in Csv.Parse(File.ReadAllText(path, Encoding.UTF8)).Skip(1))
                 {
-                    if (fields.Count < Header.Length)
+                    if (fields.Count < RequiredColumns)
                         continue;
                     if (!DateTime.TryParseExact(fields[0], "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var time))
                         continue;
@@ -80,6 +84,7 @@ public sealed class LogStore
                         SourcePath = fields[4],
                         DestinationPath = fields[5],
                         JobId = fields[6],
+                        Detail = fields.Count > 7 ? fields[7] : "",
                     });
                 }
             }
@@ -91,7 +96,7 @@ public sealed class LogStore
     public static void Export(string path, IEnumerable<LogEntry> entries, LogClassification classification)
     {
         var sb = new StringBuilder();
-        sb.AppendLine(Csv.Line(new[] { "결과", "시간", "분류", "분류 코드", "변환 형식", "파일 이름", "파일 경로", "저장 경로", "부가 정보" }));
+        sb.AppendLine(Csv.Line(new[] { "결과", "시간", "분류", "분류 코드", "변환 형식", "파일 이름", "파일 경로", "저장 경로", "부가 정보", "상세 메시지" }));
         foreach (var e in entries)
         {
             var rule = classification.Rule(e.Code);
@@ -106,6 +111,7 @@ public sealed class LogStore
                 e.SourcePath,
                 e.DestinationPath,
                 e.JobId,
+                e.Detail,
             }));
         }
         File.WriteAllText(path, sb.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));

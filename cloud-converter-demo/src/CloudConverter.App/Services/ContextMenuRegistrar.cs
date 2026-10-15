@@ -11,9 +11,9 @@ namespace CloudConverter.App.Services;
 /// </summary>
 internal static class ContextMenuRegistrar
 {
-    private const string VerbName = "CloudConverterDemo";
-    /// <summary>메뉴에 보이는 이름. 실제 CloudConverter 가 설치된 PC 에서도 구분되도록 (Demo) 를 붙인다</summary>
-    private const string MenuText = "CloudConverter(demo)";
+    private const string VerbName = AppEdition.ContextMenuVerb;
+    /// <summary>메뉴에 보이는 이름. 실제 CloudConverter 나 다른 에디션과 구분되도록 에디션 이름을 붙인다</summary>
+    private const string MenuText = AppEdition.ContextMenuText;
     private const string ClassesRoot = @"Software\Classes";
 
     private static IEnumerable<string> ShellKeys(IEnumerable<string> extensions)

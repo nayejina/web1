@@ -297,3 +297,23 @@ public class DemoSampleTests
         Assert.Equal(ResultCodes.UnsupportedExtension, Run("readme.txt"));
     }
 }
+
+public class LogCompatibilityTests
+{
+    [Fact]
+    public void ReadsLogsWithoutDetailColumnAndRoundTripsDetail()
+    {
+        using var dir = new TempDir();
+        var logs = dir.File("logs");
+        Directory.CreateDirectory(logs);
+        File.WriteAllText(Path.Combine(logs, "20251209.csv"),
+            "Time,Code,Format,FileName,SourcePath,DestinationPath,JobId\n2025-12-09 10:00:00,1000,Mip,a.docx,C:\\a.docx,,j\n");
+        var store = new LogStore(logs);
+        var old = Assert.Single(store.Read(new DateTime(2025, 12, 9), new DateTime(2025, 12, 9)));
+        Assert.Equal("", old.Detail);
+
+        store.Append(new LogEntry { Time = new DateTime(2025, 12, 10, 9, 0, 0), Code = ResultCodes.MipError, FileName = "b.docx", Detail = "NoPolicyException: 정책 없음" });
+        var added = Assert.Single(store.Read(new DateTime(2025, 12, 10), new DateTime(2025, 12, 10)));
+        Assert.Equal("NoPolicyException: 정책 없음", added.Detail);
+    }
+}

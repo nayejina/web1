@@ -7,7 +7,7 @@ public readonly record struct Eligibility(bool Convertible, int ReasonCode);
 /// 시연용 변환 엔진. 실제 MIP/DRM 암호화는 하지 않고,
 /// 정책·확장자 규칙에 따라 결과를 판정한 뒤 변환된 이름으로 파일을 복사한다.
 /// </summary>
-public sealed class ConversionEngine
+public sealed class ConversionEngine : IConversionEngine
 {
     private static readonly byte[] CompoundFileSignature = { 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1 };
     private static readonly string[] OpenXmlExtensions =
@@ -33,6 +33,9 @@ public sealed class ConversionEngine
             return new(false, ResultCodes.ExcludedDirectory);
         return new(true, 0);
     }
+
+    ConversionOutcome IConversionEngine.Convert(string sourcePath, string destinationPath, ConversionFormat format) =>
+        new(Convert(sourcePath, destinationPath, format));
 
     /// <summary>파일 1개 변환. 반환값은 ResultCodes 의 코드</summary>
     public int Convert(string sourcePath, string destinationPath, ConversionFormat format)

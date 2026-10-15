@@ -1,0 +1,7 @@
+<Project>
+  <!-- MIP 에디션은 패키지 참조가 달라 restore/빌드 산출물을 시연판과 다른 폴더에 둔다 -->
+  <PropertyGroup Condition="'$(Edition)' == 'Mip'">
+    <BaseIntermediateOutputPath>obj.mip\</BaseIntermediateOutputPath>
+    <BaseOutputPath>bin.mip\</BaseOutputPath>
+  </PropertyGroup>
+</Project>

@@ -30,7 +30,9 @@ internal sealed class AboutForm : ThemedForm
         info.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         info.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         AddRow(info, 0, "제품명", settings.ProductName);
-        AddRow(info, 1, "계정", settings.Account);
+        // MIP 버전은 로그인한 계정을 표시
+        var account = (services.Engine as IPreparableEngine)?.SignedInAccount;
+        AddRow(info, 1, "계정", account ?? (settings.Account.Length > 0 ? settings.Account : "(로그인 전)"));
         AddRow(info, 2, "버전", settings.Version);
 
         var icon = new PictureBox
@@ -51,9 +53,9 @@ internal sealed class AboutForm : ThemedForm
         var separator = new Label { BorderStyle = BorderStyle.Fixed3D, Height = 2, Dock = DockStyle.Fill, Margin = new Padding(0, 10, 0, 10) };
         var disclaimer = new Label
         {
-            Text = DemoSettings.Disclaimer,
+            Text = AppEdition.Notice,
             AutoSize = true,
-            ForeColor = Theme.Warning,
+            ForeColor = AppEdition.IsDemo ? Theme.Warning : Theme.Accent,
             Font = Theme.Bold(),
             MaximumSize = new Size(560, 0),
             Margin = new Padding(0, 0, 0, 12),
@@ -68,7 +70,8 @@ internal sealed class AboutForm : ThemedForm
         _menuButton.Margin = new Padding(0, 0, 6, 0);
         var close = new FlatButton("닫기") { Width = 80, DialogResult = DialogResult.OK, Margin = Padding.Empty };
         buttons.Controls.Add(_menuButton, 0, 0);
-        buttons.Controls.Add(samples, 1, 0);
+        if (AppEdition.IsDemo)
+            buttons.Controls.Add(samples, 1, 0);
         buttons.Controls.Add(close, 3, 0);
         AcceptButton = close;
         CancelButton = close;

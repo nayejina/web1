@@ -3,3 +3,5 @@ obj/
 dist/
 *.user
 .vs/
+obj.mip/
+bin.mip/

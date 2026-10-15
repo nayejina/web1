@@ -1,0 +1,11 @@
+{
+  "ClientId": "",
+  "TenantId": "organizations",
+  "RedirectUri": "http://localhost",
+  "ApplicationName": "CloudConverter",
+  "LabelId": "",
+  "AskLabelEveryTime": false,
+  "JustificationMessage": "CloudConverter 를 통한 레이블 변경",
+  "RemoveLabelOnDrmConversion": false,
+  "LogLevel": "Warning"
+}

@@ -1,0 +1,30 @@
+{
+  "MipRoutes": [
+    {
+      "Source": "MyDrive",
+      "Targets": [
+        "MyDrive"
+      ]
+    }
+  ],
+  "DrmRoutes": [
+    {
+      "Source": "MyDrive",
+      "Targets": [
+        "MyDrive"
+      ]
+    }
+  ],
+  "MaxFileCount": 0,
+  "MaxTotalSizeMB": 0,
+  "ExcludedDirectories": [],
+  "ExcludedDirectoryKeywords": [],
+  "Demo": {
+    "ForceFailKeywords": [],
+    "ForceSkipKeywords": [],
+    "DetectEncryptedFiles": false,
+    "SimulatedSpeedMBps": 40,
+    "MinFileDurationMs": 300,
+    "MaxFileDurationMs": 1500
+  }
+}

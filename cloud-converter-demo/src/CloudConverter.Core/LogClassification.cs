@@ -12,12 +12,16 @@ public static class ResultCodes
     public const int FileAccessError = 2004;
     public const int DemoForcedFail = 2005;
     public const int SourceNotFound = 2006;
+    public const int MipError = 2007;
+    public const int NetworkError = 2008;
+    public const int JustificationRequired = 2009;
 
     public const int UnsupportedExtension = 3001;
     public const int EmptyFile = 3002;
     public const int PolicySkip = 3003;
     public const int ExcludedDirectory = 3004;
     public const int UserStopped = 3005;
+    public const int NotProtected = 3006;
 
     public const int FolderStarted = 9001;
     public const int FolderCompleted = 9002;
@@ -72,11 +76,15 @@ public sealed class LogClassification
             new() { Code = ResultCodes.FileAccessError, Group = "fail", Category = "파일 접근 실패", Reason = "파일에 접근할 수 없습니다 (사용 중이거나 권한 없음)" },
             new() { Code = ResultCodes.DemoForcedFail, Group = "fail", Category = "레이블 변환 권한 없음", Reason = "레이블 변환 권한 없음" },
             new() { Code = ResultCodes.SourceNotFound, Group = "fail", Category = "원본 파일 없음", Reason = "원본 파일을 찾을 수 없습니다" },
+            new() { Code = ResultCodes.MipError, Group = "fail", Category = "MIP 처리 오류", Reason = "MIP 처리 중 오류가 발생했습니다 (로그 상세 보기 참고)" },
+            new() { Code = ResultCodes.NetworkError, Group = "fail", Category = "네트워크 오류", Reason = "Microsoft 365 서비스에 연결할 수 없습니다" },
+            new() { Code = ResultCodes.JustificationRequired, Group = "fail", Category = "레이블 변경 사유 필요", Reason = "레이블을 낮추거나 제거하려면 사유가 필요합니다" },
             new() { Code = ResultCodes.UnsupportedExtension, Group = "skip", Category = "대상 확장자가 아닌 경우", Reason = "지원하지 않는 확장자" },
             new() { Code = ResultCodes.EmptyFile, Group = "skip", Category = "파일 사이즈가 0", Reason = "파일 크기가 0 입니다" },
             new() { Code = ResultCodes.PolicySkip, Group = "skip", Category = "정책에 의한 스킵", Reason = "변환 규칙에 해당하는 레이블이 아닙니다." },
             new() { Code = ResultCodes.ExcludedDirectory, Group = "skip", Category = "제외 디렉토리", Reason = "제외 디렉토리에 있는 파일" },
             new() { Code = ResultCodes.UserStopped, Group = "skip", Category = "사용자 작업 중지", Reason = "사용자가 작업을 중지했습니다" },
+            new() { Code = ResultCodes.NotProtected, Group = "skip", Category = "보호되지 않은 파일", Reason = "MIP 보호가 적용되지 않은 파일" },
             new() { Code = ResultCodes.FolderStarted, Group = "info", Category = "폴더 변환 시작", Reason = "폴더 변환 시작" },
             new() { Code = ResultCodes.FolderCompleted, Group = "info", Category = "폴더 변환 완료", Reason = "폴더 변환 완료" },
         },

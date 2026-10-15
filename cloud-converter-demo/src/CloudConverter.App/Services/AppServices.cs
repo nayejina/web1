@@ -10,7 +10,7 @@ internal sealed class AppServices
     public static string ConfigDirectory => Path.Combine(ExecutableDirectory, "config");
 
     public static string DataDirectory =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CloudConverterDemo");
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppEdition.DataFolderName);
 
     public static string DocumentsDemoDirectory =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "CloudConverterDemo");
@@ -20,7 +20,7 @@ internal sealed class AppServices
     public ConversionPolicy Policy { get; }
     public LogClassification Classification { get; private set; }
     public ProtectionStateStore States { get; }
-    public ConversionEngine Engine { get; }
+    public IConversionEngine Engine { get; }
     public LogStore Logs { get; }
     public CloudLocations Cloud { get; }
     public string SampleFolder { get; }
@@ -37,7 +37,12 @@ internal sealed class AppServices
         States = new ProtectionStateStore();
         try { File.Delete(Path.Combine(DataDirectory, "protection-state.json")); } // 이전 버전이 남긴 기록
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+#if MIP_EDITION
+        Engine = new Mip.MipConversionEngine(Load("mip-settings.json", () => new Mip.MipSettings()), Rules, Policy,
+            Path.Combine(DataDirectory, "mip_data"));
+#else
         Engine = new ConversionEngine(Rules, Policy, States);
+#endif
         Logs = new LogStore(Path.Combine(DataDirectory, "Logs"));
 
         var cloudRoot = string.IsNullOrWhiteSpace(Settings.CloudRoot)
@@ -57,6 +62,8 @@ internal sealed class AppServices
                 ConfigErrors.Add("샘플 파일 생성 실패: " + ex.Message);
             }
         }
+        if (!AppEdition.IsDemo)
+            return; // MIP 버전은 가상 클라우드를 쓰지 않는다 (실제 OneDrive/SharePoint 연동은 Microsoft Graph 필요)
         try
         {
             foreach (var site in Settings.SharePointSites)

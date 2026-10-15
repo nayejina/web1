@@ -1,28 +1,60 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!--
+    에디션 (같은 소스에서 실행 파일 2종)
+      시연판 : dotnet publish src/CloudConverter.App                  -> CloudConverter.exe
+      MIP    : dotnet publish src/CloudConverter.App -p:Edition=Mip   -> CloudConverterMip.exe
+    MIP 에디션의 중간/출력 폴더(obj.mip, bin.mip)는 Directory.Build.props 에서 분리한다.
+  -->
   <PropertyGroup>
+    <Edition Condition="'$(Edition)' == ''">Demo</Edition>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyName>CloudConverter</AssemblyName>
     <RootNamespace>CloudConverter.App</RootNamespace>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <ApplicationVisualStyles>true</ApplicationVisualStyles>
     <Version>1.4.0</Version>
-    <Product>CloudConverter (Demo)</Product>
     <Company>Ableinfo Corp.</Company>
-    <Description>CloudConverter 시연용 버전 - 실제 MIP 변환 기능을 제공하지 않습니다.</Description>
     <SatelliteResourceLanguages>ko</SatelliteResourceLanguages>
+    <DefaultItemExcludes>$(DefaultItemExcludes);obj/**;bin/**;obj.mip/**;bin.mip/**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Edition)' == 'Demo'">
+    <AssemblyName>CloudConverter</AssemblyName>
+    <Product>CloudConverter (Demo)</Product>
+    <Description>CloudConverter 시연용 버전 - 실제 MIP 변환 기능을 제공하지 않습니다.</Description>
+    <ConfigSource>..\..\config</ConfigSource>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Edition)' == 'Mip'">
+    <AssemblyName>CloudConverterMip</AssemblyName>
+    <Product>CloudConverter (MIP)</Product>
+    <Description>CloudConverter - Microsoft Information Protection SDK 연동 버전</Description>
+    <DefineConstants>$(DefineConstants);MIP_EDITION</DefineConstants>
+    <ConfigSource>..\..\config-mip</ConfigSource>
+    <!-- MIP SDK 네이티브 DLL 은 x64 만 포함 (x86/arm64 복사 방지) -->
+    <Platform>x64</Platform>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CloudConverter.Core\CloudConverter.Core.csproj" />
     <EmbeddedResource Include="Assets\app.ico" LogicalName="app.ico" />
-    <None Include="..\..\config\*.json" Link="config\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    <None Include="$(ConfigSource)\*.json" Link="config\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Edition)' == 'Mip'">
+    <PackageReference Include="Microsoft.InformationProtection.File" Version="1.18.148" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.90.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Edition)' != 'Mip'">
+    <Compile Remove="Mip\**" />
   </ItemGroup>
 
 </Project>
