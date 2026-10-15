@@ -406,11 +406,9 @@ internal sealed partial class MainForm
             TextRenderer.DrawText(g, text, _statusList.Font, bar, Color.Black, flags);
             return;
         }
-        // 파란 부분 위 글자는 흰색, 나머지는 검정
-        TextRenderer.DrawText(g, text, _statusList.Font, bar, Color.Black, flags);
-        var state = g.Save();
-        g.SetClip(filled);
-        TextRenderer.DrawText(g, text, _statusList.Font, bar, Color.White, flags);
-        g.Restore(state);
+        // 글자가 파란 부분에 완전히 덮이면 흰색, 아니면 검정
+        var textWidth = TextRenderer.MeasureText(g, text, _statusList.Font, bar.Size, flags).Width;
+        var textRight = bar.X + (bar.Width + textWidth) / 2;
+        TextRenderer.DrawText(g, text, _statusList.Font, bar, filled.Right >= textRight ? Color.White : Color.Black, flags);
     }
 }
