@@ -144,6 +144,8 @@
 
 ## 빌드 (개발자용)
 
+코드 구조와 작동 원리, 익히는 방법은 [docs/코드_가이드.md](docs/코드_가이드.md) 참고.
+
 ```powershell
 # Windows, .NET 8 SDK
 .\build.ps1        # 테스트 실행 → 시연판(dist\CloudConverterDemo) + MIP 버전(dist\CloudConverterMip)
