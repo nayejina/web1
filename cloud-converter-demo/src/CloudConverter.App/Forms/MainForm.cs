@@ -80,9 +80,9 @@ internal sealed partial class MainForm : ThemedForm
 
         Text = services.Settings.WindowTitle;
         StartPosition = FormStartPosition.CenterScreen;
-        // 디자인 가이드(1): 기본 1050 * 632, 최대 제한 없음. 최소 너비는 오른쪽 열 폭의 2배, 최소 높이 461
+        // 디자인 가이드(1): 기본 1050 * 632, 최대 제한 없음. 최소 크기는 ApplyMinimumSize (화면 배율 반영)
         Size = new Size(1050, 632);
-        MinimumSize = new Size(RightColumnWidth * 2, 461);
+        MinimumSize = new Size(RightColumnWidth * 2, MinimumHeight);
         KeyPreview = true;
         DoubleBuffered = true;
 
@@ -98,6 +98,7 @@ internal sealed partial class MainForm : ThemedForm
     private const int ColumnGap = 35;
     /// <summary>오른쪽 열(저장 위치/변환 상태) 기본 폭. 창을 줄이면 오른쪽은 유지하고 왼쪽 열이 줄어든다.</summary>
     private const int RightColumnWidth = 384;
+    private const int MinimumHeight = 461;
     private const double RightColumnRatio = 384.0 / 968.0;
     private const int HeaderTop = 22, HeaderHeight = 32, SeparatorY = 68;
     private const int SectionTop = 85, ControlHeight = 30;
@@ -146,6 +147,25 @@ internal sealed partial class MainForm : ThemedForm
         _findMenu.Items.Add("폴더 선택...", null, (_, _) => BrowseLocalFolder());
         _targetList.ContextMenuStrip = _targetMenu;
         ResumeLayout(false);
+    }
+
+    /// <summary>
+    /// 창 최소 너비 = 오른쪽 열 최소 폭의 2배. 오른쪽 열은 화면 배율(125%, 150% ...)만큼 커지므로
+    /// 최소 크기도 같은 배율로 다시 계산한다 (고정값이면 고배율에서 오른쪽 열이 잘림).
+    /// </summary>
+    private void ApplyMinimumSize() =>
+        MinimumSize = new Size(Px(RightColumnWidth) * 2, Px(MinimumHeight));
+
+    protected override void OnLoad(EventArgs e)
+    {
+        base.OnLoad(e);
+        ApplyMinimumSize();
+    }
+
+    protected override void OnDpiChanged(DpiChangedEventArgs e)
+    {
+        base.OnDpiChanged(e);
+        ApplyMinimumSize();
     }
 
     protected override void OnLayout(LayoutEventArgs e)
